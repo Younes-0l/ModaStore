@@ -1,0 +1,110 @@
+@font-face {
+    font-family: 'Vazirmatn';
+    src: url('../fonts/vazir-matn/ttf/Vazirmatn-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+
+:root {
+    --primary: #5b4ef0;
+    --primary-dark: #4338ca;
+    --primary-soft: #eeedfe;
+    --dark: #0f0f1a;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --bg: #ffffff;
+    --bg-soft: #f7f7fb;
+    --success: #16a34a;
+    --danger: #dc2626;
+    --radius: 12px;
+    --header-h: 64px;
+    --container: 1200px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+    margin: 0;
+    font-family: 'Vazirmatn', Tahoma, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.7;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main { flex: 1; }
+
+img { max-width: 100%; display: block; }
+a { color: inherit; text-decoration: none; }
+ul { list-style: none; margin: 0; padding: 0; }
+h1, h2, h3, p { margin: 0; }
+
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+
+:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+.container {
+    width: 100%;
+    max-width: var(--container);
+    margin-inline: auto;
+    padding-inline: 16px;
+}
+
+.logo {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--dark);
+    letter-spacing: -0.5px;
+}
+.logo span { color: var(--primary); }
+
+.icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text);
+    position: relative;
+    transition: background 0.2s;
+}
+.icon-btn:hover { background: var(--bg-soft); }
+
+.btn {
+    display: inline-block;
+    padding: 10px 22px;
+    border: 0;
+    border-radius: var(--radius);
+    background: var(--primary);
+    color: #fff;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+.btn:hover { background: var(--primary-dark); }
+
+/* Django messages */
+.messages { padding-top: 12px; }
+.message {
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    background: var(--primary-soft);
+    margin-bottom: 8px;
+}
+.message--success { background: #dcfce7; color: #166534; }
+.message--error { background: #fee2e2; color: #991b1b; }
+
+@media (min-width: 1024px) {
+    :root { --header-h: 72px; }
+}

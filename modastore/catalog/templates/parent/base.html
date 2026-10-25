@@ -1,20 +1,32 @@
 {% load static %}
-
-
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}ModaStore{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <title>{% block title %}ModaStore | فروشگاه لوازم دیجیتال{% endblock %}</title>
+    <link rel="preload" href="{% static 'fonts/vazir-matn/ttf/Vazirmatn-Regular.ttf' %}" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/header.css' %}">
+    <link rel="stylesheet" href="{% static 'css/footer.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    {% block header %}{% endblock %}
+    {% include 'partials/header.html' %}
+
+    {% if messages %}
+    <div class="container messages">
+        {% for message in messages %}
+        <div class="message message--{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <main>{% block content %}{% endblock %}</main>
-    {% block footer %}{% endblock %}
-    <script src="{% static 'js/main.js' %}"></script>
+
+    {% include 'partials/footer.html' %}
+
+    <script src="{% static 'js/header.js' %}" defer></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

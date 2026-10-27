@@ -1,0 +1,133 @@
+{% extends 'parent/base.html' %}
+{% load static %}
+
+{% block title %}{% if current_category %}{{ current_category.name }}{% else %}محصولات{% endif %} | ModaStore{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/product_list.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container list-page">
+    <div class="list-head">
+        <h1>{% if current_category %}{{ current_category.name }}{% else %}همه محصولات{% endif %}</h1>
+        <button type="button" class="btn btn--outline filter-open">فیلترها</button>
+    </div>
+
+    <div class="list-layout">
+        <div class="filter-overlay" hidden></div>
+        <aside class="filters" id="filters">
+            <div class="filters__head">
+                <strong>فیلترها</strong>
+                <button type="button" class="icon-btn filter-close" aria-label="بستن">✕</button>
+            </div>
+
+            <form method="get" id="filter-form">
+                {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+                <input type="hidden" name="sort" value="{{ current_sort }}">
+
+                <details class="filter-group" open>
+                    <summary>دسته‌بندی</summary>
+                    <ul>
+                        <li><a href="{% url 'catalog:product_list' %}" {% if not current_category %}class="is-active"{% endif %}>همه</a></li>
+                        {% for cat in categories %}
+                        <li><a href="{% url 'catalog:category' cat.slug %}" {% if current_category == cat %}class="is-active"{% endif %}>{{ cat.name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </details>
+
+                <details class="filter-group" open>
+                    <summary>برند</summary>
+                    <ul>
+                        {% for brand in brands %}
+                        <li>
+                            <label>
+                                <input type="checkbox" name="brand" value="{{ brand.slug }}"
+                                       {% if brand.slug in selected_brands %}checked{% endif %}>
+                                {{ brand.name }}
+                            </label>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </details>
+
+                <details class="filter-group" open>
+                    <summary>بازه قیمت (تومان)</summary>
+                    <div class="price-inputs">
+                        <input type="number" name="price_min" min="0" placeholder="از" value="{{ price_min }}">
+                        <input type="number" name="price_max" min="0" placeholder="تا" value="{{ price_max }}">
+                    </div>
+                </details>
+
+                {% for attr in filter_attributes %}
+                <details class="filter-group">
+                    <summary>{{ attr.name }}</summary>
+                    <ul>
+                        {% for val in attr.values.all %}
+                        <li>
+                            <label>
+                                <input type="checkbox" name="attr_{{ attr.id }}" value="{{ val.id }}"
+                                       {% if val.id in selected_attr_ids %}checked{% endif %}>
+                                {{ val.value }}
+                            </label>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </details>
+                {% endfor %}
+
+                <label class="stock-toggle">
+                    <input type="checkbox" name="in_stock" value="1" {% if in_stock %}checked{% endif %}>
+                    فقط کالاهای موجود
+                </label>
+
+                <div class="filters__actions">
+                    <button type="submit" class="btn">اعمال فیلتر</button>
+                    <a href="{% if current_category %}{% url 'catalog:category' current_category.slug %}{% else %}{% url 'catalog:product_list' %}{% endif %}" class="btn btn--outline">حذف فیلترها</a>
+                </div>
+            </form>
+        </aside>
+
+        <section class="list-main">
+            <div class="sort-bar">
+                <span class="muted">{{ paginator.count }} کالا</span>
+                <div class="sort-links">
+                    {% for key, label in sort_options %}
+                       <a href="?{% if sort_query_string %}{{ sort_query_string }}&{% endif %}sort={{ key }}"
+                        class="{% if current_sort == key %}is-active{% endif %}">{{ label }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if products %}
+            <div class="product-grid">
+                {% for product in products %}
+                    {% include 'partials/product_card.html' %}
+                {% endfor %}
+            </div>
+
+            {% if is_paginated %}
+            <nav class="pagination" aria-label="صفحه‌بندی">
+                {% if page_obj.has_previous %}
+                <a href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_obj.previous_page_number }}">قبلی</a>
+                {% endif %}
+                <span>صفحه {{ page_obj.number }} از {{ paginator.num_pages }}</span>
+                {% if page_obj.has_next %}
+                <a href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_obj.next_page_number }}">بعدی</a>
+                {% endif %}
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <div class="empty-state">
+                <p>محصولی با این فیلترها پیدا نشد.</p>
+            </div>
+            {% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/product_list.js' %}" defer></script>
+{% endblock %}

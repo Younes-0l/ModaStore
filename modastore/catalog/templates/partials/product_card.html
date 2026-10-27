@@ -1,0 +1,24 @@
+{% load price_tags %}
+
+{% with variant=product.variants.all.0 image=product.main_images.0 %}
+<article class="product-card">
+    <a href="#" class="product-card__image">
+        {% if image %}
+        <img src="{{ image.image.url }}" alt="{{ image.alt|default:product.name }}" loading="lazy">
+        {% else %}
+        <div class="product-card__placeholder">بدون تصویر</div>
+        {% endif %}
+        {% if variant.discount_percent %}
+        <span class="badge">{{ variant.discount_percent }}٪</span>
+        {% endif %}
+    </a>
+    <div class="product-card__body">
+        <span class="muted">{{ product.brand.name }}</span>
+        <h3><a href="#">{{ product.name }}</a></h3>
+        <div class="product-card__price">
+            {% if variant.old_price %}<del>{{ variant.old_price|price_format }}</del>{% endif %}
+            <strong>{{ product.min_price|price_format }} <small>تومان</small></strong>
+        </div>
+    </div>
+</article>
+{% endwith %}

@@ -1,0 +1,125 @@
+{% extends 'parent/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+{# Marks JS support early so reveal animations never hide content without JS #}
+<script>document.documentElement.classList.add('js');</script>
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<section class="hero">
+    <picture class="hero__bg">
+        <source media="(min-width: 1024px)" srcset="{% static 'img/modastore-hero-desktop.png' %}">
+        <source media="(min-width: 640px)" srcset="{% static 'img/modastore-hero-tablet.png' %}">
+        <img src="{% static 'img/modastore-hero-mobile.png' %}" alt="" fetchpriority="high">
+    </picture>
+    <div class="container">
+        <div class="hero__content">
+            <span class="hero__eyebrow">تازه‌های دنیای دیجیتال</span>
+            <h1>آینده، در <span>دستان شماست</span></h1>
+            <p>جدیدترین موبایل‌ها، لپ‌تاپ‌ها و لوازم دیجیتال با ضمانت اصالت کالا و ارسال سریع.</p>
+            <a href="{% url 'catalog:product_list' %}" class="btn btn--lg">مشاهده محصولات</a>
+        </div>
+    </div>
+</section>
+
+<!-- Perks -->
+<section class="container perks-wrap">
+    <ul class="perks">
+        <li><img src="{% static 'svgs/truck.svg' %}" alt="" width="32" height="32"><div><strong>ارسال سریع</strong><span>به سراسر کشور</span></div></li>
+        <li><img src="{% static 'svgs/shield-check.svg' %}" alt="" width="32" height="32"><div><strong>ضمانت اصالت</strong><span>کالای اورجینال</span></div></li>
+        <li><img src="{% static 'svgs/headset.svg' %}" alt="" width="32" height="32"><div><strong>پشتیبانی</strong><span>مشاوره تخصصی خرید</span></div></li>
+        <li><img src="{% static 'svgs/return.svg' %}" alt="" width="32" height="32"><div><strong>بازگشت کالا</strong><span>طبق شرایط بازگشت</span></div></li>
+    </ul>
+</section>
+
+<!-- Categories -->
+{% if categories %}
+<section class="container section">
+    <div class="section-head reveal">
+        <h2>دسته‌بندی محصولات</h2>
+    </div>
+    <div class="cat-grid stagger">
+        {% for cat in categories %}
+        <a class="cat-card" href="{% url 'catalog:category' cat.slug %}">
+            <span class="cat-card__img">
+                {% if cat.image %}
+                <img src="{{ cat.image.url }}" alt="" loading="lazy">
+                {% else %}
+                <img src="{% static 'svgs/fallback-category.svg' %}" alt="" loading="lazy" class="is-fallback">
+                {% endif %}
+            </span>
+            <span class="cat-card__name">{{ cat.name }}</span>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- New products -->
+{% if new_products %}
+<section class="container section">
+    <div class="section-head reveal">
+        <h2>جدیدترین محصولات</h2>
+        <a href="{% url 'catalog:product_list' %}" class="see-all">مشاهده همه <img src="{% static 'svgs/arrow-left.svg' %}" alt="" width="18" height="18"></a>
+    </div>
+    <div class="product-row stagger">
+        {% for product in new_products %}
+            {% include 'partials/product_card.html' %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Offers -->
+{% if offer_products %}
+<section class="container section">
+    <div class="offers">
+        <div class="section-head section-head--light reveal">
+            <h2>پیشنهاد ویژه</h2>
+            <a href="{% url 'catalog:product_list' %}" class="see-all">مشاهده همه <img src="{% static 'svgs/arrow-left.svg' %}" alt="" width="18" height="18"></a>
+        </div>
+        <div class="product-row stagger">
+            {% for product in offer_products %}
+                {% include 'partials/product_card.html' %}
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Banner -->
+<section class="container section">
+    <div class="banner reveal">
+        <div>
+            <h2>سبک زندگی هوشمند با ModaStore</h2>
+            <p>از موبایل و لپ‌تاپ تا لوازم گیمینگ و ایرپاد، همه‌چیز در یک فروشگاه.</p>
+        </div>
+        <a href="{% url 'catalog:product_list' %}" class="btn btn--light">شروع خرید</a>
+    </div>
+</section>
+
+<!-- Brands -->
+{% if brands %}
+<section class="container section">
+    <div class="section-head reveal">
+        <h2>برندها</h2>
+    </div>
+    <div class="brand-row stagger">
+        {% for brand in brands %}
+        <a class="brand-item" href="{% url 'catalog:product_list' %}?brand={{ brand.slug }}" aria-label="{{ brand.name }}">
+            <img src="{{ brand.logo.url }}" alt="{{ brand.name }}" loading="lazy">
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/home.js' %}" defer></script>
+{% endblock %}

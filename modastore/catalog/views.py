@@ -1,10 +1,10 @@
 from django.shortcuts import render
-from django.views.generic import TemplateView
 from django.core.paginator import Paginator
 from django.db.models import Count, Max, Min, Prefetch, Q
 from django.shortcuts import get_object_or_404
-from django.views.generic import ListView, TemplateView
+from django.views.generic import ListView, DetailView, TemplateView
 from .models import Attribute, Brand, Category, Product, ProductImage, ProductVariant
+import json
 
 
 # Create your views here.
@@ -138,4 +138,69 @@ class ProductListView(ListView):
         sort_query.pop('page', None)
         sort_query.pop('sort', None)
         ctx['sort_query_string'] = sort_query.urlencode()
+        return ctx
+
+
+class ProductDetailView(DetailView):
+    model = Product
+    template_name = 'catalog/product_detail.html'
+    context_object_name = 'product'
+    slug_url_kwarg = 'slug'
+
+    def get_queryset(self):
+        return (
+            Product.objects.filter(is_active=True)
+            .select_related('brand', 'category')
+            .prefetch_related(
+                Prefetch(
+                    'variants',
+                    queryset=ProductVariant.objects.filter(is_active=True),
+                ),
+                'images',
+                'attribute_links__value__attribute',
+            )
+        )
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        product = self.object
+        variants = list(product.variants.all())  # already prefetched, ordered by price
+
+        # Default selection: cheapest in-stock variant, else the first one
+        default = next((v for v in variants if v.in_stock), variants[0] if variants else None)
+
+        ctx['variants'] = variants
+        ctx['default_variant'] = default
+        ctx['variants_json'] = [
+            {
+                'id': v.id,
+                'color': v.color,
+                'storage': v.storage,
+                'price': v.price,
+                'old_price': v.old_price,
+                'discount': v.discount_percent,
+                'stock': v.stock,
+            }
+            for v in variants
+        ]
+        # Distinct options in order of appearance
+        ctx['colors'] = list({v.color: v.color_hex for v in variants if v.color}.items())
+        ctx['storages'] = list(dict.fromkeys(v.storage for v in variants if v.storage))
+
+        # Specs grouped by attribute group
+        specs = {}
+        for link in product.attribute_links.all():
+            attr = link.value.attribute
+            specs.setdefault(attr.group or 'سایر', []).append((attr.name, link.value.value))
+        ctx['spec_groups'] = specs
+
+        ctx['related_products'] = (
+            Product.objects.filter(is_active=True, category=product.category)
+            .exclude(pk=product.pk)
+            .select_related('brand')
+            .prefetch_related(
+                Prefetch('variants', queryset=ProductVariant.objects.filter(is_active=True)),
+                Prefetch('images', queryset=ProductImage.objects.filter(is_main=True), to_attr='main_images'),
+            )[:4]
+        )
         return ctx

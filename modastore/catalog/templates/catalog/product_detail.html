@@ -1,0 +1,130 @@
+{% extends 'parent/base.html' %}
+{% load static %}
+{% load price_tags %}
+
+{% block title %}{{ product.name }} | ModaStore{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/product_detail.css' %}">
+{% endblock %}
+
+
+{% block content %}
+<div class="container detail-page">
+    <nav class="breadcrumb" aria-label="مسیر صفحه">
+        <a href="{% url 'catalog:home' %}">خانه</a> /
+        <a href="{% url 'catalog:category' product.category.slug %}">{{ product.category.name }}</a> /
+        <span>{{ product.name }}</span>
+    </nav>
+
+    <div class="detail-top">
+        <!-- Gallery -->
+        <section class="gallery">
+            {% with main=product.images.all.0 %}
+            <div class="gallery__main">
+                {% if main %}
+                <img id="gallery-main" src="{{ main.image.url }}" alt="{{ main.alt|default:product.name }}">
+                {% else %}
+                <div class="product-card__placeholder">بدون تصویر</div>
+                {% endif %}
+            </div>
+            {% endwith %}
+            {% if product.images.all|length > 1 %}
+            <div class="gallery__thumbs">
+                {% for img in product.images.all %}
+                <button type="button" class="thumb {% if forloop.first %}is-active{% endif %}"
+                        data-src="{{ img.image.url }}" aria-label="تصویر {{ forloop.counter }}">
+                    <img src="{{ img.image.url }}" alt="" loading="lazy">
+                </button>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- Info -->
+        <section class="info">
+            <span class="muted">{{ product.brand.name }}</span>
+            <h1>{{ product.name }}</h1>
+
+            {% if default_variant %}
+            {% if colors %}
+            <div class="option-group">
+                <div class="option-title">رنگ: <strong id="color-label">{{ default_variant.color }}</strong></div>
+                <div class="swatches" id="color-options">
+                    {% for name, hex in colors %}
+                    <button type="button" class="swatch {% if name == default_variant.color %}is-active{% endif %}"
+                            data-color="{{ name }}" title="{{ name }}" aria-label="{{ name }}"
+                            style="--swatch: {{ hex|default:'#ccc' }}"></button>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if storages %}
+            <div class="option-group">
+                <div class="option-title">حافظه</div>
+                <div class="chips" id="storage-options">
+                    {% for s in storages %}
+                    <button type="button" class="chip {% if s == default_variant.storage %}is-active{% endif %}"
+                            data-storage="{{ s }}">{{ s }}</button>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="buy-box">
+                <div class="buy-box__price">
+                    <del id="old-price" {% if not default_variant.old_price %}hidden{% endif %}>{{ default_variant.old_price|price_format }}</del>
+                    <span class="badge badge--inline" id="discount" {% if not default_variant.discount_percent %}hidden{% endif %}>{{ default_variant.discount_percent }}٪</span>
+                    <strong id="price">{{ default_variant.price|price_format }}</strong> <small>تومان</small>
+                </div>
+                <p class="stock" id="stock-msg"></p>
+                <button type="button" class="btn btn--block" id="add-to-cart" disabled>افزودن به سبد خرید</button>
+            </div>
+            {% else %}
+            <p class="stock stock--out">این محصول در حال حاضر موجود نیست.</p>
+            {% endif %}
+        </section>
+    </div>
+
+    <!-- Tabs -->
+    <section class="tabs">
+        <div class="tabs__nav" role="tablist">
+            <button type="button" role="tab" class="tab is-active" data-tab="desc" aria-selected="true">توضیحات</button>
+            <button type="button" role="tab" class="tab" data-tab="specs" aria-selected="false">مشخصات فنی</button>
+        </div>
+        <div class="tab-panel is-active" id="tab-desc" role="tabpanel">
+            {{ product.description|linebreaks|default:"توضیحاتی ثبت نشده است." }}
+        </div>
+        <div class="tab-panel" id="tab-specs" role="tabpanel">
+            {% for group, rows in spec_groups.items %}
+            <h3>{{ group }}</h3>
+            <table class="spec-table">
+                {% for name, value in rows %}
+                <tr><th>{{ name }}</th><td>{{ value }}</td></tr>
+                {% endfor %}
+            </table>
+            {% empty %}
+            <p class="muted">مشخصاتی ثبت نشده است.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    {% if related_products %}
+    <section class="related">
+        <h2>محصولات مرتبط</h2>
+        <div class="product-grid">
+            {% for product in related_products %}
+                {% include 'partials/product_card.html' %}
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+
+{{ variants_json|json_script:"variants-data" }}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/product_detail.js' %}" defer></script>
+{% endblock %}

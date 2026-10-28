@@ -2,7 +2,7 @@
 
 {% with variant=product.variants.all.0 image=product.main_images.0 %}
 <article class="product-card">
-    <a href="#" class="product-card__image">
+    <a href="{% url 'catalog:product_detail' product.slug %}" class="product-card__image">
         {% if image %}
         <img src="{{ image.image.url }}" alt="{{ image.alt|default:product.name }}" loading="lazy">
         {% else %}
@@ -14,10 +14,10 @@
     </a>
     <div class="product-card__body">
         <span class="muted">{{ product.brand.name }}</span>
-        <h3><a href="#">{{ product.name }}</a></h3>
+        <h3><a href="{% url 'catalog:product_detail' product.slug %}">{{ product.name }}</a></h3>
         <div class="product-card__price">
             {% if variant.old_price %}<del>{{ variant.old_price|price_format }}</del>{% endif %}
-            <strong>{{ product.min_price|price_format }} <small>تومان</small></strong>
+            <strong>{{ variant.price|price_format }}<small>تومان</small></strong>
         </div>
     </div>
 </article>

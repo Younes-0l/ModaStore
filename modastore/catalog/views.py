@@ -12,6 +12,40 @@ import json
 class HomeView(TemplateView):
     template_name = 'catalog/home.html'
 
+    @staticmethod
+    def _with_card_data(qs):
+        """Attach everything product_card.html needs, in a fixed number of queries."""
+        return qs.select_related('brand').prefetch_related(
+            Prefetch(
+                'variants',
+                queryset=ProductVariant.objects.filter(is_active=True),
+            ),
+            Prefetch(
+                'images',
+                queryset=ProductImage.objects.filter(is_main=True),
+                to_attr='main_images',
+            ),
+        )
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+
+        # Only products that can actually be bought (at least one active variant)
+        purchasable = Product.objects.filter(
+            is_active=True, variants__is_active=True,
+        )
+
+        ctx['categories'] = Category.objects.filter(is_active=True, parent=None)[:6]
+        ctx['new_products'] = self._with_card_data(
+            purchasable.distinct().order_by('-created_at')
+        )[:8]
+        ctx['offer_products'] = self._with_card_data(
+            purchasable.filter(variants__old_price__isnull=False)
+            .distinct().order_by('-updated_at')
+        )[:8]
+        ctx['brands'] = Brand.objects.filter(is_active=True).exclude(logo='')[:8]
+        return ctx
+
 
 class ProductListView(ListView):
     """Product listing with filters, sorting and pagination."""

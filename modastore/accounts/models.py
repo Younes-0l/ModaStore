@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.core.validators import RegexValidator
 from django.db import models
 from django.utils import timezone
+from django.conf import settings
 
 
 # Iranian mobile format: 09xxxxxxxxx (11 digits)
@@ -62,3 +63,59 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def full_name(self):
         return f'{self.first_name} {self.last_name}'.strip()
+
+
+class OTPCode(models.Model):
+    """A one-time login code. Only a keyed hash of the code is stored."""
+
+    phone_number = models.CharField('شماره موبایل', max_length=11, db_index=True)
+    code_hash = models.CharField(max_length=64)
+    created_at = models.DateTimeField('تاریخ ایجاد', auto_now_add=True)
+    expires_at = models.DateTimeField('زمان انقضا')
+    attempts = models.PositiveSmallIntegerField('تعداد تلاش', default=0)
+    is_used = models.BooleanField('استفاده‌شده', default=False)
+
+    class Meta:
+        verbose_name = 'کد یکبارمصرف'
+        verbose_name_plural = 'کدهای یکبارمصرف'
+        ordering = ['-created_at']
+        indexes = [models.Index(fields=['phone_number', '-created_at'])]
+
+    def __str__(self):
+        return f'{self.phone_number} ({self.created_at:%Y-%m-%d %H:%M})'
+
+
+class Address(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, verbose_name='کاربر',
+        on_delete=models.CASCADE, related_name='addresses',
+    )
+    title = models.CharField('عنوان', max_length=50, help_text='مثلاً: خانه، محل کار')
+    receiver_name = models.CharField('نام گیرنده', max_length=100)
+    receiver_phone = models.CharField(
+        'موبایل گیرنده', max_length=11, validators=[phone_validator],
+    )
+    province = models.CharField('استان', max_length=60)
+    city = models.CharField('شهر', max_length=60)
+    postal_code = models.CharField(
+        'کد پستی', max_length=10,
+        validators=[RegexValidator(r'^\d{10}$', 'کد پستی باید ۱۰ رقم باشد.')],
+    )
+    full_address = models.TextField('آدرس کامل')
+    is_default = models.BooleanField('آدرس پیش‌فرض', default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'آدرس'
+        verbose_name_plural = 'آدرس‌ها'
+        ordering = ['-is_default', '-created_at']
+        constraints = [
+            # At most one default address per user
+            models.UniqueConstraint(
+                fields=['user'], condition=models.Q(is_default=True),
+                name='unique_default_address_per_user',
+            ),
+        ]
+
+    def __str__(self):
+        return f'{self.title} - {self.city}'

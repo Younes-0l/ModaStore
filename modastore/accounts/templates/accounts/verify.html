@@ -1,0 +1,39 @@
+{% extends 'parent/base.html' %}
+{% load static %}
+
+{% block title %}تأیید شماره | ModaStore{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/auth.css' %}">{% endblock %}
+
+{% block content %}
+<div class="container auth-page">
+    <div class="auth-card">
+        <h1>کد تأیید</h1>
+        <p class="muted">کد ارسال‌شده به <strong dir="ltr">{{ phone }}</strong> را وارد کنید.</p>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ next }}">
+            {% if form.non_field_errors %}<div class="form-error">{{ form.non_field_errors.0 }}</div>{% endif %}
+
+            <label class="field">
+                <span>کد ۶ رقمی</span>
+                <input type="text" name="code" inputmode="numeric" autocomplete="one-time-code"
+                       maxlength="6" dir="ltr" class="otp-input" required autofocus>
+                {% if form.code.errors %}<small class="field-error">{{ form.code.errors.0 }}</small>{% endif %}
+            </label>
+
+            <button type="submit" class="btn btn--block">ورود</button>
+        </form>
+
+        <div class="auth-links">
+            <form method="post" action="{% url 'accounts:resend' %}" id="resend-form">
+                {% csrf_token %}
+                <button type="submit" class="link-btn" id="resend-btn" data-wait="{{ wait }}" disabled>ارسال مجدد کد</button>
+            </form>
+            <a href="{% url 'accounts:login' %}">تغییر شماره</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/auth.js' %}" defer></script>{% endblock %}

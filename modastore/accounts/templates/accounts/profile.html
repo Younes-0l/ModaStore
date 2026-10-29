@@ -1,0 +1,61 @@
+{% extends 'parent/base.html' %}
+{% load static %}
+
+{% block title %}حساب کاربری | ModaStore{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/auth.css' %}">{% endblock %}
+
+{% block content %}
+<div class="container profile-page">
+    <h1>حساب کاربری</h1>
+    <p class="muted" dir="ltr" style="text-align: right;">{{ user.phone_number }}</p>
+
+    <div class="profile-grid">
+        <section class="auth-card">
+            <h2>اطلاعات شخصی</h2>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {% for field in form %}
+                <label class="field">
+                    <span>{{ field.label }}</span>
+                    {{ field }}
+                    {% if field.errors %}<small class="field-error">{{ field.errors.0 }}</small>{% endif %}
+                </label>
+                {% endfor %}
+                <button type="submit" class="btn btn--block">ذخیره</button>
+            </form>
+        </section>
+
+        <section class="auth-card">
+            <div class="card-head">
+                <h2>آدرس‌ها</h2>
+                <a href="{% url 'accounts:address_add' %}" class="btn btn--outline btn--sm">افزودن آدرس</a>
+            </div>
+            {% for address in addresses %}
+            <article class="address-item">
+                <div>
+                    <strong>{{ address.title }}</strong>
+                    {% if address.is_default %}<span class="tag">پیش‌فرض</span>{% endif %}
+                    <p>{{ address.province }}، {{ address.city }}، {{ address.full_address }}</p>
+                    <p class="muted">{{ address.receiver_name }} - کد پستی {{ address.postal_code }}</p>
+                </div>
+                <div class="address-actions">
+                    <a href="{% url 'accounts:address_edit' address.pk %}">ویرایش</a>
+                    <form method="post" action="{% url 'accounts:address_delete' address.pk %}"
+                          onsubmit="return confirm('این آدرس حذف شود؟');">
+                        {% csrf_token %}
+                        <button type="submit" class="link-btn link-btn--danger">حذف</button>
+                    </form>
+                </div>
+            </article>
+            {% empty %}
+            <p class="muted">هنوز آدرسی ثبت نکرده‌اید.</p>
+            {% endfor %}
+        </section>
+    </div>
+
+    <form method="post" action="{% url 'accounts:logout' %}" class="logout-form">
+        {% csrf_token %}
+        <button type="submit" class="btn btn--outline">خروج از حساب</button>
+    </form>
+</div>
+{% endblock %}

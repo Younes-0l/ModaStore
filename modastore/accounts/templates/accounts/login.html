@@ -1,0 +1,30 @@
+{% extends 'parent/base.html' %}
+{% load static %}
+
+{% block title %}ورود یا ثبت‌نام | ModaStore{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/auth.css' %}">{% endblock %}
+
+{% block content %}
+<div class="container auth-page">
+    <div class="auth-card">
+        <h1>ورود یا ثبت‌نام</h1>
+        <p class="muted">شماره موبایل خود را وارد کنید تا کد تأیید برایتان ارسال شود.</p>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ next }}">
+            {% if form.non_field_errors %}<div class="form-error">{{ form.non_field_errors.0 }}</div>{% endif %}
+
+            <label class="field">
+                <span>شماره موبایل</span>
+                <input type="tel" name="phone_number" inputmode="numeric" autocomplete="tel"
+                       placeholder="09123456789" dir="ltr" required autofocus
+                       value="{{ form.phone_number.value|default:'' }}">
+                {% if form.phone_number.errors %}<small class="field-error">{{ form.phone_number.errors.0 }}</small>{% endif %}
+            </label>
+
+            <button type="submit" class="btn btn--block">دریافت کد تأیید</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

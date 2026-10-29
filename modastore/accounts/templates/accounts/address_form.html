@@ -1,0 +1,31 @@
+{% extends 'parent/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} | ModaStore{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/auth.css' %}">{% endblock %}
+
+{% block content %}
+<div class="container auth-page">
+    <div class="auth-card auth-card--wide">
+        <h1>{{ title }}</h1>
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% for field in form %}
+            {% if field.name == 'is_default' %}
+            <label class="check">{{ field }} <span>{{ field.label }}</span></label>
+            {% else %}
+            <label class="field">
+                <span>{{ field.label }}</span>
+                {{ field }}
+                {% if field.errors %}<small class="field-error">{{ field.errors.0 }}</small>{% endif %}
+            </label>
+            {% endif %}
+            {% endfor %}
+            <div class="form-actions">
+                <button type="submit" class="btn">ذخیره</button>
+                <a href="{% url 'accounts:profile' %}" class="btn btn--outline">انصراف</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+.auth-page { display: grid; place-items: start center; padding-block: 32px; }
+.auth-card {
+    width: 100%; max-width: 420px; display: grid; gap: 14px;
+    padding: 24px 20px; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(15, 15, 26, .06);
+}
+.auth-card--wide { max-width: 640px; }
+.auth-card h1 { font-size: 1.35rem; }
+.auth-card h2 { font-size: 1.1rem; }
+.auth-card form { display: grid; gap: 14px; }
+
+.field { display: grid; gap: 6px; font-size: .9rem; }
+.field input, .field textarea, .field select {
+    width: 100%; padding: 12px 14px; background: var(--bg-soft);
+    border: 1px solid var(--border); border-radius: var(--radius);
+}
+.field input:focus, .field textarea:focus { outline: none; border-color: var(--primary); background: var(--bg); }
+.field-error { color: var(--danger); }
+.form-error { padding: 10px 14px; border-radius: var(--radius); background: #fee2e2; color: #991b1b; font-size: .9rem; }
+.check { display: flex; align-items: center; gap: 8px; }
+
+.otp-input { text-align: center; font-size: 1.5rem; letter-spacing: .5em; }
+.btn--sm { padding: 6px 14px; font-size: .85rem; }
+
+.auth-links { display: flex; justify-content: space-between; align-items: center; font-size: .9rem; }
+.auth-links a { color: var(--primary); }
+.auth-links form { display: block; }
+.link-btn { border: 0; background: none; padding: 0; color: var(--primary); }
+.link-btn:disabled { color: var(--muted); cursor: not-allowed; }
+.link-btn--danger { color: var(--danger); }
+
+.profile-page { padding-block: 24px; }
+.profile-grid { display: grid; gap: 16px; margin-block: 16px; }
+.profile-grid .auth-card { max-width: none; }
+.card-head { display: flex; justify-content: space-between; align-items: center; }
+.address-item { display: flex; justify-content: space-between; gap: 12px; padding-block: 12px; border-top: 1px solid var(--border); font-size: .9rem; }
+.address-actions { display: grid; gap: 6px; justify-items: end; align-content: start; }
+.address-actions a { color: var(--primary); }
+.tag { margin-inline-start: 6px; padding: 2px 8px; border-radius: 999px; background: var(--primary-soft); color: var(--primary); font-size: .75rem; }
+.form-actions { display: flex; gap: 10px; }
+.logout-form { margin-top: 8px; }
+
+@media (min-width: 768px) {
+    .profile-grid { grid-template-columns: 1fr 1fr; align-items: start; }
+}

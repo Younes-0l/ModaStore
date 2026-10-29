@@ -136,4 +136,17 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'accounts.User'
+
+# OTP
+OTP_LENGTH = 6
+OTP_TTL_SECONDS = 120
+OTP_RESEND_SECONDS = 120
+OTP_MAX_ATTEMPTS = 5
+OTP_MAX_REQUESTS_PER_HOUR = 5
+
 LOGIN_URL = 'accounts:login'
+LOGIN_REDIRECT_URL = 'catalog:home'
+LOGOUT_REDIRECT_URL = 'catalog:home'
+
+# Console backend prints OTP codes in development
+SMS_BACKEND = os.environ.get('SMS_BACKEND', 'console')

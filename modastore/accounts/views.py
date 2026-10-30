@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
-from .services import services
+from .services import services, addresses
 from .forms import AddressForm, OTPForm, PhoneForm, ProfileForm
 from .models import Address
 
@@ -62,10 +62,13 @@ def verify_view(request):
         else:
             request.session.pop(SESSION_PHONE_KEY, None)
             login(request, user)  # also rotates the session key
+            nxt = _safe_next(request)
+            if nxt:
+                return redirect(nxt)
             if not user.first_name:
                 messages.success(request, 'خوش آمدید! لطفاً اطلاعات پروفایل خود را کامل کنید.')
                 return redirect('accounts:profile')
-            return redirect(_safe_next(request) or 'catalog:home')
+            return redirect('catalog:home')
 
     return render(request, 'accounts/verify.html', {
         'form': form,
@@ -114,7 +117,7 @@ def address_create(request):
     if request.method == 'POST' and form.is_valid():
         address = form.save(commit=False)
         address.user = request.user
-        _save_address(address)
+        addresses.save_address(address)
         messages.success(request, 'آدرس اضافه شد.')
         return redirect('accounts:profile')
     return render(request, 'accounts/address_form.html', {'form': form, 'title': 'افزودن آدرس'})
@@ -126,7 +129,7 @@ def address_edit(request, pk):
     address = get_object_or_404(Address, pk=pk, user=request.user)
     form = AddressForm(request.POST or None, instance=address)
     if request.method == 'POST' and form.is_valid():
-        _save_address(form.save(commit=False))
+        addresses.save_address(form.save(commit=False))
         messages.success(request, 'آدرس ویرایش شد.')
         return redirect('accounts:profile')
     return render(request, 'accounts/address_form.html', {'form': form, 'title': 'ویرایش آدرس'})
@@ -138,18 +141,3 @@ def address_delete(request, pk):
     get_object_or_404(Address, pk=pk, user=request.user).delete()
     messages.success(request, 'آدرس حذف شد.')
     return redirect('accounts:profile')
-
-
-def _save_address(address):
-    """Keep exactly one default address; the first address becomes default."""
-    from django.db import transaction
-
-    with transaction.atomic():
-        has_other = Address.objects.filter(user=address.user).exclude(pk=address.pk).exists()
-        if not has_other:
-            address.is_default = True
-        if address.is_default:
-            Address.objects.filter(user=address.user, is_default=True).exclude(
-                pk=address.pk
-            ).update(is_default=False)
-        address.save()

@@ -57,33 +57,43 @@ def resend_wait_seconds(phone_number: str) -> int:
     return max(0, settings.OTP_RESEND_SECONDS - int(passed))
 
 
-@transaction.atomic
 def verify_otp(phone_number: str, code: str):
     """Return the user (created on first login) or raise OTPError."""
-    # Row lock prevents parallel requests from bypassing the attempt limit
-    otp = (
-        OTPCode.objects.select_for_update()
-        .filter(phone_number=phone_number, is_used=False)
-        .first()
-    )
-    generic = OTPError('کد وارد‌شده نادرست یا منقضی شده است.')
-    if otp is None or otp.expires_at < timezone.now():
-        raise generic
-    if otp.attempts >= settings.OTP_MAX_ATTEMPTS:
-        otp.is_used = True
-        otp.save(update_fields=['is_used'])
-        raise OTPError('تعداد تلاش‌ها بیش از حد مجاز است. کد جدید دریافت کنید.')
+    # The state change (attempt counter) is committed inside the atomic block,
+    # and the error is raised only AFTER it, so the commit is not rolled back.
+    error = None
+    user = None
 
-    if not hmac.compare_digest(otp.code_hash, _hash_code(phone_number, code)):
-        otp.attempts += 1
-        otp.save(update_fields=['attempts'])
-        raise generic
+    with transaction.atomic():
+        # Row lock prevents parallel requests from bypassing the attempt limit
+        otp = (
+            OTPCode.objects.select_for_update()
+            .filter(phone_number=phone_number, is_used=False)
+            .first()
+        )
+        if otp is None or otp.expires_at < timezone.now():
+            error = 'کد منقضی شده یا نامعتبر است. لطفاً کد جدید دریافت کنید.'
+        elif otp.attempts >= settings.OTP_MAX_ATTEMPTS:
+            otp.is_used = True
+            otp.save(update_fields=['is_used'])
+            error = 'تعداد تلاش‌ها بیش از حد مجاز است. کد جدید دریافت کنید.'
+        elif not hmac.compare_digest(otp.code_hash, _hash_code(phone_number, code)):
+            otp.attempts += 1
+            left = settings.OTP_MAX_ATTEMPTS - otp.attempts
+            if left <= 0:
+                otp.is_used = True  # burn the code on the last allowed attempt
+                error = 'تعداد تلاش‌ها بیش از حد مجاز است. کد جدید دریافت کنید.'
+            else:
+                error = f'کد واردشده نادرست است. {left} تلاش دیگر باقی مانده است.'
+            otp.save(update_fields=['attempts', 'is_used'])
+        else:
+            otp.is_used = True
+            otp.save(update_fields=['is_used'])
+            User = get_user_model()
+            user, _ = User.objects.get_or_create(phone_number=phone_number)
+            if not user.is_active:
+                error = 'حساب کاربری شما غیرفعال شده است.'
 
-    otp.is_used = True
-    otp.save(update_fields=['is_used'])
-
-    User = get_user_model()
-    user, _ = User.objects.get_or_create(phone_number=phone_number)
-    if not user.is_active:
-        raise OTPError('حساب کاربری شما غیرفعال شده است.')
+    if error:
+        raise OTPError(error)
     return user

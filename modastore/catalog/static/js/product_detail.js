@@ -4,6 +4,7 @@
     const dataEl = document.getElementById('variants-data');
     if (!dataEl) return;
     const variants = JSON.parse(dataEl.textContent);
+    const variantInput = document.getElementById('variant-id');
 
     // --- Gallery ---
     const mainImg = document.getElementById('gallery-main');
@@ -82,7 +83,7 @@
             : (v.stock <= 5 ? 'تنها ' + v.stock.toLocaleString('fa-IR') + ' عدد در انبار باقی مانده' : 'موجود در انبار');
         stockEl.classList.toggle('stock--out', !inStock);
         cartBtn.disabled = !inStock;
-        cartBtn.dataset.variantId = v.id;
+        if (variantInput) variantInput.value = v.id;
     }
 
     colorBtns.forEach(function (b) {

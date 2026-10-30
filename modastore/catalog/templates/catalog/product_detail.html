@@ -12,8 +12,8 @@
 {% block content %}
 <div class="container detail-page">
     <nav class="breadcrumb" aria-label="مسیر صفحه">
-        <a href="{% url 'catalog:home' %}">خانه</a> /
-        <a href="{% url 'catalog:category' product.category.slug %}">{{ product.category.name }}</a> /
+        <a href="{% url 'catalog:home' %}">خانه</a> {% icon 'chevron-left' 'icon--sm' %}
+        <a href="{% url 'catalog:category' product.category.slug %}">{{ product.category.name }}</a> {% icon 'chevron-left' 'icon--sm' %}
         <span>{{ product.name }}</span>
     </nav>
 
@@ -79,7 +79,19 @@
                     <strong id="price">{{ default_variant.price|price_format }}</strong> <small>تومان</small>
                 </div>
                 <p class="stock" id="stock-msg"></p>
-                <button type="button" class="btn btn--block" id="add-to-cart" disabled>افزودن به سبد خرید</button>
+                <form method="post" action="{% url 'cart:add' %}" id="add-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="variant_id" id="variant-id" value="{{ default_variant.id }}">
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit" class="btn btn--block btn--lg" id="add-to-cart"
+                            {% if not default_variant.in_stock %}disabled{% endif %}>
+                        {% icon 'cart-plus' %} افزودن به سبد خرید
+                    </button>
+                </form>
+                <ul class="trust-list">
+                    <li>{% icon 'shield-check' %} ضمانت اصالت کالا</li>
+                    <li>{% icon 'truck' %} ارسال سریع به سراسر کشور</li>
+                </ul>
             </div>
             {% else %}
             <p class="stock stock--out">این محصول در حال حاضر موجود نیست.</p>

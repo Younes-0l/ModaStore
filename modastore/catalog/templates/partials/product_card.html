@@ -2,22 +2,29 @@
 
 {% with variant=product.variants.all.0 image=product.main_images.0 %}
 <article class="product-card">
-    <a href="{% url 'catalog:product_detail' product.slug %}" class="product-card__image">
-        {% if image %}
-        <img src="{{ image.image.url }}" alt="{{ image.alt|default:product.name }}" loading="lazy">
-        {% else %}
-        <div class="product-card__placeholder">بدون تصویر</div>
+    <div class="product-card__media">
+        <a href="{% url 'catalog:product_detail' product.slug %}" class="product-card__image" aria-label="{{ product.name }}">
+            {% if image %}
+            <img src="{{ image.image.url }}" alt="{{ image.alt|default:product.name }}" loading="lazy">
+            {% else %}
+            <div class="product-card__placeholder">بدون تصویر</div>
+            {% endif %}
+            {% if variant.discount_percent %}
+            <span class="badge">{{ variant.discount_percent }}٪</span>
+            {% endif %}
+        </a>
+        {% if variant.in_stock %}
+        <button type="button" class="product-card__add" data-add-variant="{{ variant.id }}" aria-label="افزودن به سبد خرید">
+            {% icon 'cart-plus' %}
+        </button>
         {% endif %}
-        {% if variant.discount_percent %}
-        <span class="badge">{{ variant.discount_percent }}٪</span>
-        {% endif %}
-    </a>
+    </div>
     <div class="product-card__body">
         <span class="muted">{{ product.brand.name }}</span>
         <h3><a href="{% url 'catalog:product_detail' product.slug %}">{{ product.name }}</a></h3>
         <div class="product-card__price">
             {% if variant.old_price %}<del>{{ variant.old_price|price_format }}</del>{% endif %}
-            <strong>{{ variant.price|price_format }}<small>تومان</small></strong>
+            <strong>{{ variant.price|price_format }} <small>تومان</small></strong>
         </div>
     </div>
 </article>

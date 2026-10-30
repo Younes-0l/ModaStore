@@ -1,0 +1,106 @@
+{% extends 'parent/base.html' %}
+{% load static %}
+{% load price_tags %}
+
+{% block title %}سبد خرید | ModaStore{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/cart.css' %}">{% endblock %}
+
+{% block content %}
+<div class="container cart-page">
+    <h1 class="page-title">
+        {% icon 'cart' %} سبد خرید
+        {% if count %}<span class="muted">({{ count }} کالا)</span>{% endif %}
+    </h1>
+
+    {% if lines %}
+    <div class="cart-layout">
+        <ul class="cart-list">
+            {% for item in lines %}
+            {% with v=item.variant p=item.variant.product %}
+            <li class="cart-item {% if not item.is_valid %}is-problem{% endif %}">
+                <a class="cart-item__img" href="{% url 'catalog:product_detail' p.slug %}">
+                    {% with img=p.main_images.0 %}
+                    {% if img %}<img src="{{ img.image.url }}" alt="" loading="lazy">{% endif %}
+                    {% endwith %}
+                </a>
+
+                <div class="cart-item__info">
+                    <span class="muted">{{ p.brand.name }}</span>
+                    <h3><a href="{% url 'catalog:product_detail' p.slug %}">{{ p.name }}</a></h3>
+                    <ul class="cart-item__meta">
+                        {% if v.color %}<li><span class="dot" style="--swatch: {{ v.color_hex|default:'#ccc' }}"></span>{{ v.color }}</li>{% endif %}
+                        {% if v.storage %}<li>{{ v.storage }}</li>{% endif %}
+                    </ul>
+                    {% if not item.is_available %}
+                    <p class="item-warning">{% icon 'alert-circle' %} این کالا دیگر موجود نیست. لطفاً آن را حذف کنید.</p>
+                    {% elif item.exceeds_stock %}
+                    <p class="item-warning">{% icon 'alert-circle' %} موجودی این کالا فقط {{ v.stock }} عدد است.</p>
+                    {% endif %}
+                </div>
+
+                <div class="cart-item__side">
+                    {% if item.is_available %}
+                    <div class="stepper">
+                        <form method="post" action="{% url 'cart:update' item.pk %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="quantity" value="{{ item.quantity|add:'1' }}">
+                            <button type="submit" class="stepper__btn" aria-label="افزایش تعداد"
+                                    {% if item.quantity >= item.max_quantity %}disabled{% endif %}>{% icon 'plus' %}</button>
+                        </form>
+                        <span class="stepper__qty">{{ item.quantity }}</span>
+                        <form method="post" action="{% url 'cart:update' item.pk %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="quantity" value="{{ item.quantity|add:'-1' }}">
+                            <button type="submit" class="stepper__btn" aria-label="کاهش تعداد"
+                                    {% if item.quantity <= 1 %}disabled{% endif %}>{% icon 'minus' %}</button>
+                        </form>
+                    </div>
+                    {% endif %}
+
+                    <div class="cart-item__price">
+                        {% if v.old_price %}<del>{{ item.line_old_total|price_format }}</del>{% endif %}
+                        <strong>{{ item.line_total|price_format }} <small>تومان</small></strong>
+                    </div>
+
+                    <form method="post" action="{% url 'cart:remove' item.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="remove-btn" aria-label="حذف از سبد">{% icon 'trash' %} <span>حذف</span></button>
+                    </form>
+                </div>
+            </li>
+            {% endwith %}
+            {% endfor %}
+        </ul>
+
+        <aside class="cart-summary">
+            <h2>خلاصه سفارش</h2>
+            <dl>
+                <div><dt>قیمت کالاها</dt><dd>{{ total_old|price_format }} تومان</dd></div>
+                {% if savings %}
+                <div class="is-saving"><dt>{% icon 'tag' %} سود شما از تخفیف</dt><dd>{{ savings|price_format }} تومان</dd></div>
+                {% endif %}
+                <div><dt>هزینه ارسال</dt><dd class="muted">در مرحله بعد محاسبه می‌شود</dd></div>
+                <div class="is-total"><dt>مبلغ قابل پرداخت</dt><dd>{{ total|price_format }} تومان</dd></div>
+            </dl>
+
+            {% if has_problems %}
+            <p class="item-warning">{% icon 'alert-circle' %} برای ادامه، کالاهای دارای مشکل را اصلاح یا حذف کنید.</p>
+            <span class="btn btn--block is-disabled" aria-disabled="true">ادامه و ثبت سفارش</span>
+            {% else %}
+            {# Will point to the checkout page ({% url 'orders:checkout' %}) in the next phase #}
+            <a href="#" class="btn btn--block btn--lg">ادامه و ثبت سفارش</a>
+            {% endif %}
+            <p class="cart-note">{% icon 'lock' %} اطلاعات شما محافظت می‌شود.</p>
+        </aside>
+    </div>
+
+    {% else %}
+    <div class="cart-empty">
+        {% icon 'cart' 'icon--xl' %}
+        <h2>سبد خرید شما خالی است</h2>
+        <p class="muted">محصولات مورد علاقه‌ات را پیدا کن و به سبد اضافه کن.</p>
+        <a href="{% url 'catalog:product_list' %}" class="btn">مشاهده محصولات</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

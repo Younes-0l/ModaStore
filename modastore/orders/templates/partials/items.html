@@ -1,0 +1,21 @@
+{% load price_tags %}
+
+
+<ul class="order-items">
+    {% for item in order.items.all %}
+    <li class="order-item">
+        <span class="order-item__img">{% if item.image_url %}<img src="{{ item.image_url }}" alt="" loading="lazy">{% endif %}</span>
+        <div class="order-item__info">
+            <strong>
+                {% if item.variant_id %}<a href="{% url 'catalog:product_detail' item.variant.product.slug %}">{{ item.product_name }}</a>
+                {% else %}{{ item.product_name }}{% endif %}
+            </strong>
+            <small class="muted">{{ item.color }}{% if item.color and item.storage %} · {% endif %}{{ item.storage }}</small>
+        </div>
+        <div class="order-item__price">
+            <span class="muted">{{ item.quantity }} × {{ item.unit_price|price_format }}</span>
+            <strong>{{ item.line_total|price_format }} تومان</strong>
+        </div>
+    </li>
+    {% endfor %}
+</ul>

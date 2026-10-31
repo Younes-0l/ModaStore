@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'catalog.apps.CatalogConfig',
     'accounts.apps.AccountsConfig',
     'cart.apps.CartConfig',
+    'orders.apps.OrdersConfig',
 ]
 
 MIDDLEWARE = [
@@ -155,3 +156,9 @@ LOGOUT_REDIRECT_URL = 'catalog:home'
 
 # Console backend prints OTP codes in development
 SMS_BACKEND = os.environ.get('SMS_BACKEND', 'console')
+
+# Orders and payment
+SHIPPING_FEE = 50_000                 # Toman, flat rate
+FREE_SHIPPING_THRESHOLD = None        # e.g. 10_000_000 to enable free shipping
+ORDER_PAYMENT_TIMEOUT_MINUTES = 30
+PAYMENT_GATEWAY = os.environ.get('PAYMENT_GATEWAY', 'mock')

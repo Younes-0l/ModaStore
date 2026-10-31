@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="{% static 'css/theme.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
-<body data-cart-add-url="{% url 'cart:add' %}">
+<body class="{% block body_class %}{% endblock %}" data-cart-add-url="{% url 'cart:add' %}">
     {% include 'partials/header.html' %}
 
     {% if messages %}

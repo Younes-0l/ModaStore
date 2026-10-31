@@ -56,6 +56,7 @@
     <form method="post" action="{% url 'accounts:logout' %}" class="logout-form">
         {% csrf_token %}
         <button type="submit" class="btn btn--outline">خروج از حساب</button>
+        <a href="{% url 'orders:list' %}" class="btn btn--outline">سفارش‌های من</a>
     </form>
 </div>
 {% endblock %}

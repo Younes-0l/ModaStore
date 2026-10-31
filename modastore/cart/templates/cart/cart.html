@@ -3,10 +3,14 @@
 {% load price_tags %}
 
 {% block title %}سبد خرید | ModaStore{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/cart.css' %}">{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/cart.css' %}">
+    <link rel="stylesheet" href="{% static 'css/checkout.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="container cart-page">
+    {% checkout_steps 1 %}
     <h1 class="page-title">
         {% icon 'cart' %} سبد خرید
         {% if count %}<span class="muted">({{ count }} کالا)</span>{% endif %}
@@ -87,8 +91,7 @@
             <p class="item-warning">{% icon 'alert-circle' %} برای ادامه، کالاهای دارای مشکل را اصلاح یا حذف کنید.</p>
             <span class="btn btn--block is-disabled" aria-disabled="true">ادامه و ثبت سفارش</span>
             {% else %}
-            {# Will point to the checkout page ({% url 'orders:checkout' %}) in the next phase #}
-            <a href="#" class="btn btn--block btn--lg">ادامه و ثبت سفارش</a>
+                <a href="{% url 'orders:checkout' %}" class="btn btn--block btn--lg">ادامه و ثبت سفارش</a>
             {% endif %}
             <p class="cart-note">{% icon 'lock' %} اطلاعات شما محافظت می‌شود.</p>
         </aside>

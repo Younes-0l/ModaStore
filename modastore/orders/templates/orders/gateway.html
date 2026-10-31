@@ -1,0 +1,28 @@
+{% extends 'parent/base.html' %}
+{% load static %}
+{% load price_tags %}
+
+
+{% block title %}درگاه پرداخت آزمایشی{% endblock %}
+{% block body_class %}is-checkout{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/checkout.css' %}">{% endblock %}
+
+{% block content %}
+<div class="container checkout-page">
+    <div class="checkout-body">
+        <section class="panel gateway">
+            <span class="test-ribbon">درگاه آزمایشی، فقط برای توسعه</span>
+            <h1>{% icon 'credit-card' %} پرداخت آنلاین</h1>
+            <dl>
+                <div><dt>شماره سفارش</dt><dd dir="ltr">{{ payment.order.number }}</dd></div>
+                <div class="is-total"><dt>مبلغ</dt><dd>{{ payment.amount|price_format }} تومان</dd></div>
+            </dl>
+            <form method="post" class="gateway__actions">
+                {% csrf_token %}
+                <button type="submit" name="result" value="success" class="btn btn--block btn--success">{% icon 'check-circle' %} پرداخت موفق</button>
+                <button type="submit" name="result" value="fail" class="btn btn--block btn--danger-outline">{% icon 'x-circle' %} انصراف / پرداخت ناموفق</button>
+            </form>
+        </section>
+    </div>
+</div>
+{% endblock %}

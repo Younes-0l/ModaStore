@@ -1,0 +1,69 @@
+{% extends 'parent/base.html' %}
+{% load static %}
+
+{% block title %}اطلاعات ارسال | ModaStore{% endblock %}
+{% block body_class %}is-checkout{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+<link rel="stylesheet" href="{% static 'css/checkout.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container checkout-page">
+    {% checkout_steps 2 %}
+
+    <div class="checkout-body">
+        <form method="post" class="checkout-grid" novalidate>
+            {% csrf_token %}
+            <input type="hidden" name="mode" id="mode" value="{{ mode }}">
+
+            <section class="panel">
+                <header class="panel__head">
+                    <h1>{% icon 'map-pin' %} آدرس تحویل سفارش</h1>
+                    {% if addresses %}
+                    <div class="seg" role="tablist">
+                        <button type="button" role="tab" data-mode-tab="saved" class="{% if mode == 'saved' %}is-active{% endif %}">آدرس‌های من</button>
+                        <button type="button" role="tab" data-mode-tab="new" class="{% if mode == 'new' %}is-active{% endif %}">آدرس جدید</button>
+                    </div>
+                    {% endif %}
+                </header>
+
+                {% if addresses %}
+                <div class="addr-grid" data-mode-panel="saved" {% if mode != 'saved' %}hidden{% endif %}>
+                    {% for a in addresses %}
+                    <label class="addr-card">
+                        <input type="radio" name="address_id" value="{{ a.pk }}" {% if a.pk == selected_id %}checked{% endif %}>
+                        <span class="addr-card__body">
+                            <strong>{{ a.title }}{% if a.is_default %} <span class="tag">پیش‌فرض</span>{% endif %}</strong>
+                            <small>{{ a.receiver_name }} - <span dir="ltr">{{ a.receiver_phone }}</span></small>
+                            <small>{{ a.province }}، {{ a.city }}، {{ a.full_address }}</small>
+                        </span>
+                    </label>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="form-grid" data-mode-panel="new" {% if mode != 'new' %}hidden{% endif %}>
+                    {% if form.non_field_errors %}<div class="form-error field--full">{{ form.non_field_errors.0 }}</div>{% endif %}
+                    {% for field in form %}
+                    <label class="field {% if field.name == 'full_address' %}field--full{% endif %}">
+                        <span>{{ field.label }}</span>
+                        {{ field }}
+                        {% if field.errors %}<small class="field-error">{{ field.errors.0 }}</small>{% endif %}
+                    </label>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <aside class="summary summary--compact">
+                <h2>خلاصه سفارش</h2>
+                {% include 'partials/summary_rows.html' with items_price=total_old %}
+                <button type="submit" class="btn btn--block btn--lg">ادامه {% icon 'arrow-left' %}</button>
+                <a href="{% url 'cart:detail' %}" class="back-link">{% icon 'arrow-right' %} بازگشت به سبد خرید</a>
+            </aside>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/checkout.js' %}" defer></script>{% endblock %}

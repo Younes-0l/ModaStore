@@ -1,0 +1,58 @@
+{% extends 'parent/base.html' %}
+{% load static %}
+
+{% block title %}ثبت سفارش | ModaStore{% endblock %}
+{% block body_class %}is-checkout{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/checkout.css' %}">{% endblock %}
+
+{% block content %}
+<div class="container checkout-page">
+    {% checkout_steps 3 %}
+
+    <div class="checkout-body">
+        <div class="checkout-grid">
+            <div class="stack">
+                <section class="panel">
+                    <header class="panel__head">
+                        <h1>{% icon 'map-pin' %} آدرس تحویل</h1>
+                        <a href="{% url 'orders:checkout' %}" class="link-btn">تغییر آدرس</a>
+                    </header>
+                    <p><strong>{{ address.receiver_name }}</strong> <span class="muted" dir="ltr">{{ address.receiver_phone }}</span></p>
+                    <p class="muted">{{ address.province }}، {{ address.city }}، {{ address.full_address }}</p>
+                    <p class="muted">کد پستی: {{ address.postal_code }}</p>
+                </section>
+
+                <section class="panel">
+                    <header class="panel__head">
+                        <h2>{% icon 'package' %} کالاهای سفارش ({{ count }})</h2>
+                        <a href="{% url 'cart:detail' %}" class="link-btn">ویرایش سبد</a>
+                    </header>
+                    <ul class="thumbs">
+                        {% for item in lines %}
+                        <li class="thumb-item" title="{{ item.variant.product.name }}">
+                            {% with img=item.variant.product.main_images.0 %}
+                            {% if img %}<img src="{{ img.image.url }}" alt="{{ item.variant.product.name }}" loading="lazy">{% endif %}
+                            {% endwith %}
+                            <span class="thumb-item__qty">{{ item.quantity }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </section>
+            </div>
+
+            <aside class="summary">
+                <h2>خلاصه سفارش</h2>
+                {% include 'partials/summary_rows.html' with items_price=total_old %}
+                <form method="post" data-once>
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn--block btn--lg">ثبت سفارش و پرداخت</button>
+                </form>
+                <p class="note">{% icon 'clock' %} کالاها تا {{ timeout_minutes }} دقیقه بعد از ثبت برای شما رزرو می‌شوند.</p>
+                <a href="{% url 'orders:checkout' %}" class="back-link">{% icon 'arrow-right' %} بازگشت</a>
+            </aside>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/checkout.js' %}" defer></script>{% endblock %}

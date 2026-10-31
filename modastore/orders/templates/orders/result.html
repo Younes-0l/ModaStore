@@ -1,0 +1,68 @@
+{% extends 'parent/base.html' %}
+{% load static %}
+{% load price_tags %}
+
+
+{% block title %}نتیجه سفارش | ModaStore{% endblock %}
+{% block body_class %}is-checkout{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/checkout.css' %}">{% endblock %}
+
+{% block content %}
+<div class="container checkout-page">
+    {% checkout_steps step %}
+
+    <div class="checkout-body">
+        <div class="checkout-grid">
+            <section class="panel result-card">
+                {% if order.is_paid %}
+                <span class="result-icon result-icon--success">{% icon 'check' %}</span>
+                <h1>سفارش شما با موفقیت ثبت شد</h1>
+                <p class="muted">پرداخت انجام شد و سفارش در حال آماده‌سازی است.</p>
+                {% elif order.status == 'pending' %}
+                <span class="result-icon result-icon--failed">{% icon 'x-circle' %}</span>
+                <h1>پرداخت انجام نشد</h1>
+                <p class="muted">می‌توانید تا پایان مهلت دوباره پرداخت کنید.
+                    <span class="countdown" data-countdown="{{ order.seconds_left }}">{% icon 'clock' %} <span data-countdown-text>--:--</span></span>
+                </p>
+                {% else %}
+                <span class="result-icon result-icon--canceled">{% icon 'x-circle' %}</span>
+                <h1>سفارش لغو شد</h1>
+                <p class="muted">این سفارش پرداخت نشد یا لغو شد و کالاها آزاد شدند.</p>
+                {% endif %}
+
+                <dl class="result-meta">
+                    <div><dt>شماره سفارش</dt><dd dir="ltr">{{ order.number }}</dd></div>
+                    {% if payment and payment.status == 'success' %}
+                    <div><dt>شماره پیگیری پرداخت</dt><dd dir="ltr">{{ payment.ref_id }}</dd></div>
+                    {% endif %}
+                    <div><dt>مبلغ</dt><dd>{{ order.total|price_format }} تومان</dd></div>
+                </dl>
+
+                <div class="result-actions">
+                    {% if order.status == 'pending' %}
+                    <a href="{% url 'orders:pay' order.number %}" class="btn btn--lg">{% icon 'credit-card' %} پرداخت مجدد</a>
+                    {% else %}
+                    <a href="{% url 'orders:detail' order.number %}" class="btn btn--lg">{% icon 'receipt' %} جزئیات سفارش</a>
+                    {% endif %}
+                    <a href="{% url 'catalog:product_list' %}" class="btn btn--outline btn--lg">ادامه خرید</a>
+                </div>
+            </section>
+
+            <section class="panel">
+                <header class="panel__head"><h2>{% icon 'package' %} کالاهای سفارش</h2></header>
+                <ul class="thumbs">
+                    {% for item in order.items.all %}
+                    <li class="thumb-item" title="{{ item.product_name }}">
+                        {% if item.image_url %}<img src="{{ item.image_url }}" alt="{{ item.product_name }}" loading="lazy">{% endif %}
+                        <span class="thumb-item__qty">{{ item.quantity }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <p class="muted">{% icon 'map-pin' %} {{ order.receiver_name }}، {{ order.province }}، {{ order.city }}</p>
+            </section>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/checkout.js' %}" defer></script>{% endblock %}

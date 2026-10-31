@@ -1,0 +1,53 @@
+{% extends 'parent/base.html' %}
+{% load static %}
+{% load price_tags %}
+
+{% block title %}پرداخت | ModaStore{% endblock %}
+{% block body_class %}is-checkout{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/checkout.css' %}">{% endblock %}
+
+{% block content %}
+<div class="container checkout-page">
+    {% checkout_steps 4 %}
+
+    <div class="checkout-body">
+        <div class="checkout-grid">
+            <section class="panel">
+                <header class="panel__head">
+                    <h1>{% icon 'credit-card' %} پرداخت سفارش</h1>
+                    <span class="countdown" data-countdown="{{ order.seconds_left }}">
+                        {% icon 'clock' %} <span data-countdown-text>--:--</span>
+                    </span>
+                </header>
+
+                <p class="muted">سفارش شما با شماره <strong dir="ltr">{{ order.number }}</strong> ثبت شد. تا پایان زمان بالا فرصت پرداخت دارید، وگرنه سفارش لغو و کالاها آزاد می‌شوند.</p>
+
+                <div class="method">
+                    {% icon 'credit-card' %}
+                    <div>
+                        <strong>پرداخت آنلاین</strong>
+                        <small class="muted">از طریق درگاه بانکی (فعلاً درگاه آزمایشی)</small>
+                    </div>
+                </div>
+
+                <p class="muted">{% icon 'map-pin' %} ارسال به: {{ order.receiver_name }}، {{ order.province }}، {{ order.city }}</p>
+            </section>
+
+            <aside class="summary">
+                <h2>خلاصه سفارش</h2>
+                {% include 'partials/summary_rows.html' with items_price=order.subtotal shipping=order.shipping_fee payable=order.total %}
+                <form method="post" data-once>
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn--block btn--lg">{% icon 'lock' %} پرداخت {{ order.total|price_format }} تومان</button>
+                </form>
+                <form method="post" action="{% url 'orders:cancel' order.number %}" onsubmit="return confirm('سفارش لغو شود؟');">
+                    {% csrf_token %}
+                    <button type="submit" class="back-link back-link--danger">انصراف از سفارش</button>
+                </form>
+            </aside>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/checkout.js' %}" defer></script>{% endblock %}

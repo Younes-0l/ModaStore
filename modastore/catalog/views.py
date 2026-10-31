@@ -4,8 +4,10 @@ from django.db.models import Count, Max, Min, Prefetch, Q
 from django.shortcuts import get_object_or_404
 from django.views.generic import ListView, DetailView, TemplateView
 from .models import Attribute, Brand, Category, Product, ProductImage, ProductVariant
-import json
+import json, re
 
+
+_DIGITS = str.maketrans('۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩', '01234567890123456789')
 
 # Create your views here.
 
@@ -106,6 +108,8 @@ class ProductListView(ListView):
         # Price range
         price_min = self._to_int(params.get('price_min'))
         price_max = self._to_int(params.get('price_max'))
+        if price_min is not None and price_max is not None and price_min > price_max:
+            price_min, price_max = price_max, price_min
         if price_min is not None:
             qs = qs.filter(variants__price__gte=price_min, variants__is_active=True)
         if price_max is not None:
@@ -132,10 +136,9 @@ class ProductListView(ListView):
 
     @staticmethod
     def _to_int(value):
-        try:
-            return max(int(value), 0)
-        except (TypeError, ValueError):
-            return None
+        """Accept '12,000,000', '۱۲٬۰۰۰٬۰۰۰' or plain digits; return int or None."""
+        digits = re.sub(r'\D', '', (value or '').translate(_DIGITS))
+        return int(digits) if digits else None
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -163,8 +166,32 @@ class ProductListView(ListView):
         ctx['sort_options'] = [(k, v[0]) for k, v in self.SORT_OPTIONS.items()]
         ctx['current_sort'] = params.get('sort', 'newest')
         ctx['q'] = params.get('q', '')
-        ctx['price_min'] = params.get('price_min', '')
-        ctx['price_max'] = params.get('price_max', '')
+        # Price slider: bounds come from real data in the current category scope
+        variants = ProductVariant.objects.filter(is_active=True, product__is_active=True)
+        if self.category:
+            variants = variants.filter(
+                Q(product__category=self.category) | Q(product__category__parent=self.category),
+            )
+        agg = variants.aggregate(lo=Min('price'), hi=Max('price'))
+        lo, hi = agg['lo'] or 0, agg['hi'] or 0
+        # ~100-500 slider steps whatever the price scale is
+        step = 10 ** max(3, len(str(max(hi - lo, 1))) - 3)
+        ctx['bound_min'] = lo // step * step
+        ctx['bound_max'] = -(-hi // step) * step   # round up
+        ctx['price_step'] = step
+
+        price_min = self._to_int(params.get('price_min'))
+        price_max = self._to_int(params.get('price_max'))
+        if price_min is not None and price_max is not None and price_min > price_max:
+            price_min, price_max = price_max, price_min
+        ctx['price_min'] = price_min
+        ctx['price_max'] = price_max
+        ctx['price_active'] = price_min is not None or price_max is not None
+
+        clear = params.copy()
+        for key in ('price_min', 'price_max', 'page'):
+            clear.pop(key, None)
+        ctx['price_clear_query'] = clear.urlencode()
         ctx['in_stock'] = params.get('in_stock') == '1'
 
         # Keep filters in pagination links (everything except "page")

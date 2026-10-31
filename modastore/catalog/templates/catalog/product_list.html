@@ -1,5 +1,7 @@
 {% extends 'parent/base.html' %}
 {% load static %}
+{% load price_tags %}
+
 
 {% block title %}{% if current_category %}{{ current_category.name }}{% else %}محصولات{% endif %} | ModaStore{% endblock %}
 
@@ -53,10 +55,38 @@
 
                 <details class="filter-group" open>
                     <summary>بازه قیمت (تومان)</summary>
-                    <div class="price-inputs">
-                        <input type="number" name="price_min" min="0" placeholder="از" value="{{ price_min }}">
-                        <input type="number" name="price_max" min="0" placeholder="تا" value="{{ price_max }}">
+                    {% if bound_max > bound_min %}
+                    <div class="price-range" data-price-range
+                        data-min="{{ bound_min }}" data-max="{{ bound_max }}">
+                        <div class="range-values">
+                            <label>
+                                <span>از</span>
+                                <input type="text" inputmode="numeric" name="price_min" dir="ltr" autocomplete="off"
+                                    value="{{ price_min|default_if_none:'' }}" data-price-input="min" aria-label="حداقل قیمت">
+                            </label>
+                            <label>
+                                <span>تا</span>
+                                <input type="text" inputmode="numeric" name="price_max" dir="ltr" autocomplete="off"
+                                    value="{{ price_max|default_if_none:'' }}" data-price-input="max" aria-label="حداکثر قیمت">
+                            </label>
+                        </div>
+
+                        <div class="range-slider">
+                            <div class="range-slider__track"><div class="range-slider__fill"></div></div>
+                            <input type="range" min="{{ bound_min }}" max="{{ bound_max }}" step="{{ price_step }}"
+                                value="{{ price_min|default:bound_min }}" data-range="min" aria-label="حداقل قیمت">
+                            <input type="range" min="{{ bound_min }}" max="{{ bound_max }}" step="{{ price_step }}"
+                                value="{{ price_max|default:bound_max }}" data-range="max" aria-label="حداکثر قیمت">
+                        </div>
+
+                        <div class="range-bounds">
+                            <span>{{ bound_min|price_format }}</span>
+                            <span>{{ bound_max|price_format }}</span>
+                        </div>
                     </div>
+                    {% else %}
+                    <p class="muted">بازه قیمتی قابل تنظیم نیست.</p>
+                    {% endif %}
                 </details>
 
                 {% for attr in filter_attributes %}
@@ -89,6 +119,19 @@
         </aside>
 
         <section class="list-main">
+
+            {% if price_active %}
+            <div class="active-filters">
+                <a class="filter-chip" href="?{{ price_clear_query }}" aria-label="حذف فیلتر قیمت">
+                    {% icon 'close' 'icon--sm' %}
+                    قیمت:
+                    {% if price_min is not None %}از {{ price_min|price_format }}{% endif %}
+                    {% if price_max is not None %}تا {{ price_max|price_format }}{% endif %}
+                    تومان
+                </a>
+            </div>
+            {% endif %}
+
             <div class="sort-bar">
                 <span class="muted">{{ paginator.count }} کالا</span>
                 <div class="sort-links">
@@ -130,4 +173,5 @@
 
 {% block extra_js %}
 <script src="{% static 'js/product_list.js' %}" defer></script>
+<script src="{% static 'js/price_range.js' %}" defer></script>
 {% endblock %}

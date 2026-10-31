@@ -1,0 +1,37 @@
+{% extends 'parent/base.html' %}
+{% load static %}
+{% load price_tags %}
+
+
+{% block title %}سفارش‌های من | ModaStore{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/checkout.css' %}">{% endblock %}
+
+{% block content %}
+<div class="container orders-page">
+    <h1 class="page-title">{% icon 'receipt' %} سفارش‌های من</h1>
+
+    {% for order in orders %}
+    <a class="order-card" href="{% url 'orders:detail' order.number %}">
+        <div class="order-card__top">
+            <strong dir="ltr">{{ order.number }}</strong>
+            <span class="status status--{{ order.status }}">{{ order.get_status_display }}</span>
+        </div>
+        <ul class="thumbs thumbs--sm">
+            {% for item in order.items.all|slice:":5" %}
+            <li class="thumb-item">{% if item.image_url %}<img src="{{ item.image_url }}" alt="" loading="lazy">{% endif %}</li>
+            {% endfor %}
+        </ul>
+        <div class="order-card__bottom">
+            <span class="muted">{{ order.created_at|date:"Y/m/d H:i" }}</span>
+            <strong>{{ order.total|price_format }} تومان</strong>
+        </div>
+    </a>
+    {% empty %}
+    <div class="cart-empty">
+        {% icon 'receipt' 'icon--xl' %}
+        <h2>هنوز سفارشی ثبت نکرده‌اید</h2>
+        <a href="{% url 'catalog:product_list' %}" class="btn">مشاهده محصولات</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

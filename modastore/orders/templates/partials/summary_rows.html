@@ -1,0 +1,11 @@
+{% load price_tags %}
+
+
+<dl>
+    <div class="row-extra"><dt>قیمت کالاها</dt><dd>{{ items_price|price_format }} تومان</dd></div>
+    {% if savings %}
+    <div class="row-extra is-saving"><dt>{% icon 'tag' %} سود شما از تخفیف</dt><dd>{{ savings|price_format }} تومان</dd></div>
+    {% endif %}
+    <div class="row-extra"><dt>هزینه ارسال</dt><dd>{% if shipping %}{{ shipping|price_format }} تومان{% else %}رایگان{% endif %}</dd></div>
+    <div class="is-total"><dt>مبلغ قابل پرداخت</dt><dd>{{ payable|price_format }} تومان</dd></div>
+</dl>

@@ -1,0 +1,8 @@
+<ol class="steps" aria-label="مراحل ثبت سفارش">
+    {% for s in steps %}
+    <li class="step step--{{ s.state }}" {% if s.state == 'current' %}aria-current="step"{% endif %}>
+        <span class="step__dot">{% if s.state == 'done' %}{% icon 'check' %}{% else %}{{ s.n }}{% endif %}</span>
+        <span class="step__label">{{ s.label }}</span>
+    </li>
+    {% endfor %}
+</ol>

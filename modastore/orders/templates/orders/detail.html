@@ -1,0 +1,41 @@
+{% extends 'parent/base.html' %}
+{% load static %}
+
+{% block title %}سفارش {{ order.number }} | ModaStore{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/checkout.css' %}">{% endblock %}
+
+{% block content %}
+<div class="container orders-page">
+    <nav class="breadcrumb" aria-label="مسیر صفحه">
+        <a href="{% url 'orders:list' %}">سفارش‌های من</a> {% icon 'chevron-left' 'icon--sm' %} <span dir="ltr">{{ order.number }}</span>
+    </nav>
+
+    <section class="panel">
+        <header class="panel__head">
+            <div>
+                <h1>سفارش <span dir="ltr">{{ order.number }}</span></h1>
+                <span class="muted">{{ order.created_at|date:"Y/m/d H:i" }}</span>
+            </div>
+            <span class="status status--{{ order.status }}">{{ order.get_status_display }}</span>
+        </header>
+        {% include 'partials/items.html' %}
+    </section>
+
+    <div class="detail-grid">
+        <section class="panel">
+            <h2>{% icon 'map-pin' %} آدرس تحویل</h2>
+            <p><strong>{{ order.receiver_name }}</strong> <span class="muted" dir="ltr">{{ order.receiver_phone }}</span></p>
+            <p class="muted">{{ order.province }}، {{ order.city }}، {{ order.full_address }}</p>
+            <p class="muted">کد پستی: {{ order.postal_code }}</p>
+        </section>
+
+        <aside class="summary">
+            <h2>صورت‌حساب</h2>
+            {% include 'partials/summary_rows.html' with items_price=order.subtotal shipping=order.shipping_fee payable=order.total %}
+            {% if order.status == 'pending' %}
+            <a href="{% url 'orders:pay' order.number %}" class="btn btn--block btn--lg">پرداخت سفارش</a>
+            {% endif %}
+        </aside>
+    </div>
+</div>
+{% endblock %}

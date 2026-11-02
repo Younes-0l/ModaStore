@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'cart.apps.CartConfig',
     'orders.apps.OrdersConfig',
     'wishlist.apps.WishlistConfig',
+    'reviews.apps.ReviewsConfig',
 ]
 
 MIDDLEWARE = [
@@ -164,3 +165,7 @@ SHIPPING_FEE = 50_000                 # Toman, flat rate
 FREE_SHIPPING_THRESHOLD = None        # e.g. 10_000_000 to enable free shipping
 ORDER_PAYMENT_TIMEOUT_MINUTES = 30
 PAYMENT_GATEWAY = os.environ.get('PAYMENT_GATEWAY', 'mock')
+
+# Reviews
+REVIEWS_TRUSTED_MIN_APPROVED = 2   # approved reviews needed for auto-approval (None disables)
+REVIEWS_MAX_NEW_PER_HOUR = 5

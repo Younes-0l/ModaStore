@@ -46,6 +46,19 @@
             <span class="muted">{{ product.brand.name }}</span>
             <h1>{{ product.name }}</h1>
 
+            <form method="post" action="{% url 'wishlist:set' %}" class="wish-form">
+                {% csrf_token %}
+                <input type="hidden" name="product_id" value="{{ product.id }}">
+                <input type="hidden" name="active" value="{% if product.id in wishlist_ids %}0{% else %}1{% endif %}">
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button type="submit" class="wish-btn wish-btn--text {% if product.id in wishlist_ids %}is-active{% endif %}"
+                        data-wishlist data-product-id="{{ product.id }}"
+                        aria-pressed="{% if product.id in wishlist_ids %}true{% else %}false{% endif %}">
+                    <span class="wish-ico">{% icon 'heart' 'wish-off' %}{% icon 'heart-fill' 'wish-on' %}</span>
+                    <span data-wish-label>{% if product.id in wishlist_ids %}حذف از علاقه‌مندی‌ها{% else %}افزودن به علاقه‌مندی‌ها{% endif %}</span>
+                </button>
+            </form>
+
             {% if default_variant %}
             {% if colors %}
             <div class="option-group">

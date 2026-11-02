@@ -9,6 +9,15 @@
             {% else %}
             <div class="product-card__placeholder">بدون تصویر</div>
             {% endif %}
+
+            <button type="button"
+                    class="wish-btn {% if product.id in wishlist_ids %}is-active{% endif %}"
+                    data-wishlist data-product-id="{{ product.id }}"
+                    aria-pressed="{% if product.id in wishlist_ids %}true{% else %}false{% endif %}"
+                    aria-label="{% if product.id in wishlist_ids %}حذف از علاقه‌مندی‌ها{% else %}افزودن به علاقه‌مندی‌ها{% endif %}">
+                <span class="wish-ico">{% icon 'heart' 'wish-off' %}{% icon 'heart-fill' 'wish-on' %}</span>
+            </button>
+
             {% if variant.discount_percent %}
             <span class="badge">{{ variant.discount_percent }}٪</span>
             {% endif %}

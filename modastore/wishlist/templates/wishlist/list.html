@@ -1,0 +1,40 @@
+{% extends 'parent/base.html' %}
+{% load static %}
+
+{% block title %}علاقه‌مندی‌ها | ModaStore{% endblock %}
+
+{% block content %}
+<div class="container wl-page" data-wishlist-page>
+    <div class="wl-head">
+        <h1>
+            {% icon 'heart-fill' %} علاقه‌مندی‌های من
+            {% if paginator.count %}<span class="muted" data-wl-count="{{ paginator.count }}">({{ paginator.count }} کالا)</span>{% endif %}
+        </h1>
+        <a href="{% url 'catalog:product_list' %}" class="btn btn--outline btn--sm">ادامه خرید</a>
+    </div>
+
+    {% if products %}
+    <div class="product-grid">
+        {% for product in products %}
+            {% include 'partials/product_card.html' %}
+        {% endfor %}
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <nav class="pagination" aria-label="صفحه‌بندی">
+        {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">قبلی</a>{% endif %}
+        <span>صفحه {{ page_obj.number }} از {{ paginator.num_pages }}</span>
+        {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">بعدی</a>{% endif %}
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="wl-empty">
+        {% icon 'heart' 'icon--xl' %}
+        <h2>لیست علاقه‌مندی‌های شما خالی است</h2>
+        <p class="muted">روی قلب هر محصول بزن تا اینجا ذخیره شود.</p>
+        <a href="{% url 'catalog:product_list' %}" class="btn">مشاهده محصولات</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -14,9 +14,12 @@
     <link rel="stylesheet" href="{% static 'css/footer.css' %}">
     <link rel="stylesheet" href="{% static 'css/components.css' %}">
     <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <link rel="stylesheet" href="{% static 'css/wishlist.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
-<body class="{% block body_class %}{% endblock %}" data-cart-add-url="{% url 'cart:add' %}">
+<body class="{% block body_class %}{% endblock %}"
+    data-cart-add-url="{% url 'cart:add' %}"
+    data-wishlist-url="{% url 'wishlist:set' %}">
     {% include 'partials/header.html' %}
 
     {% if messages %}
@@ -33,6 +36,7 @@
 
     <script src="{% static 'js/header.js' %}" defer></script>
     <script src="{% static 'js/cart.js' %}" defer></script>
+    <script src="{% static 'js/wishlist.js' %}" defer></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

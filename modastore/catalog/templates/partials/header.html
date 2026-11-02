@@ -25,6 +25,10 @@
         </form>
 
         <div class="header-actions">
+            <a href="{% url 'wishlist:list' %}" class="icon-btn icon-btn--wish" aria-label="علاقه‌مندی‌ها">
+                {% icon 'heart' %}
+                <span class="cart-badge" data-wishlist-count="{{ wishlist_ids|length }}" {% if not wishlist_ids %}hidden{% endif %}>{{ wishlist_ids|length }}</span>
+            </a>
             <a href="{% url 'cart:detail' %}" class="icon-btn" aria-label="سبد خرید">
                 {% icon 'cart' %}
                 
@@ -60,8 +64,9 @@
     </div>
     <nav class="mobile-menu__nav" aria-label="منوی موبایل">
         <a href="{% url 'catalog:home' %}">خانه</a>
-        <a href="#">محصولات</a>
+        <a href="{% url 'catalog:product_list' %}">محصولات</a>
         <a href="#">مجله</a>
+        <a href="{% url 'wishlist:list' %}">علاقه‌مندی‌ها</a>
         <a href="#">درباره ما</a>
         <a href="#">تماس با ما</a>
         <a href="{% url 'cart:detail' %}">سبد خرید</a>

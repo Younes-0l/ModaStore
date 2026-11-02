@@ -35,6 +35,8 @@
         toastTimer = setTimeout(function () { el.classList.remove('is-visible'); }, 3000);
     }
 
+    window.modaToast = toast;
+
     // ---- Add to cart ----
     async function addToCart(variantId, btn) {
         if (!addUrl) return;

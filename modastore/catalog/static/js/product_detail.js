@@ -17,18 +17,28 @@
     });
 
     // --- Tabs ---
-    document.querySelectorAll('.tab').forEach(function (tab) {
-        tab.addEventListener('click', function () {
-            document.querySelectorAll('.tab').forEach(function (t) {
-                t.classList.remove('is-active');
-                t.setAttribute('aria-selected', 'false');
-            });
-            document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.remove('is-active'); });
-            tab.classList.add('is-active');
-            tab.setAttribute('aria-selected', 'true');
-            document.getElementById('tab-' + tab.dataset.tab).classList.add('is-active');
+    function activateTab(name) {
+        const tab = document.querySelector('.tab[data-tab="' + name + '"]');
+        const panel = document.getElementById('tab-' + name);
+        if (!tab || !panel) return;
+        document.querySelectorAll('.tab').forEach(function (t) {
+            t.classList.remove('is-active');
+            t.setAttribute('aria-selected', 'false');
         });
+        document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.remove('is-active'); });
+        tab.classList.add('is-active');
+        tab.setAttribute('aria-selected', 'true');
+        panel.classList.add('is-active');
+    }
+    document.querySelectorAll('.tab').forEach(function (tab) {
+        tab.addEventListener('click', function () { activateTab(tab.dataset.tab); });
     });
+    document.querySelectorAll('[data-open-tab]').forEach(function (a) {
+        a.addEventListener('click', function () { activateTab(a.dataset.openTab); });
+    });
+    function fromHash() { if (location.hash === '#reviews') activateTab('reviews'); }
+    fromHash();
+    window.addEventListener('hashchange', fromHash);
 
     // --- Variant selection ---
     const colorBtns = Array.from(document.querySelectorAll('#color-options .swatch'));

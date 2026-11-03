@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from django.views.generic import ListView, DetailView, TemplateView
 from .models import Attribute, Brand, Category, Product, ProductImage, ProductVariant
 import json, re
+from reviews.services import services as review_services
 
 
 _DIGITS = str.maketrans('۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩', '01234567890123456789')
@@ -61,6 +62,7 @@ class ProductListView(ListView):
         'newest': ('جدیدترین', '-created_at'),
         'cheapest': ('ارزان‌ترین', 'min_price'),
         'expensive': ('گران‌ترین', '-min_price'),
+        'rating': ('بیشترین امتیاز', '-rating_avg'),
     }
 
     def get_queryset(self):
@@ -264,4 +266,7 @@ class ProductDetailView(DetailView):
                 Prefetch('images', queryset=ProductImage.objects.filter(is_main=True), to_attr='main_images'),
             )[:4]
         )
+
+        ctx.update(review_services.product_reviews_context(self.request, product))
+
         return ctx

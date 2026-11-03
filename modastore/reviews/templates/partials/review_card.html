@@ -1,0 +1,64 @@
+<article class="rv-card {% if request.user.is_authenticated and r.user_id == request.user.id %}is-mine{% endif %}" id="review-{{ r.pk }}">
+    <header class="rv-card__head">
+        <span class="rv-avatar {{ r.avatar_class }}" aria-hidden="true">{{ r.avatar_letter }}</span>
+        <div class="rv-who">
+            <strong>{{ r.display_name }}</strong>
+            <div class="rv-tags">
+                {% if r.is_verified_buyer %}<span class="rv-badge rv-badge--buyer">{% icon 'shield-check' 'icon--sm' %} خریدار ModaStore</span>{% endif %}
+                {% if request.user.is_authenticated and r.user_id == request.user.id %}<span class="rv-badge">نظر شما</span>{% endif %}
+            </div>
+        </div>
+        <time class="rv-time" datetime="{{ r.created_at|date:'c' }}" title="{{ r.created_at|date:'Y/m/d H:i' }}">{{ r.created_at|ago }}</time>
+    </header>
+
+    <div class="rv-rating">
+        {% stars r.rating 'stars--sm' %}
+        {% if r.purchased_variant %}<span class="muted">خریداری‌شده: {{ r.purchased_variant }}</span>{% endif %}
+    </div>
+
+    {% if r.title %}<h4 class="rv-title">{{ r.title }}</h4>{% endif %}
+    <p class="rv-body" data-clamp>{{ r.body|linebreaksbr }}</p>
+
+    {% if r.pros_list or r.cons_list %}
+    <div class="rv-pc">
+        {% if r.pros_list %}
+        <ul class="rv-points rv-points--pro">
+            {% for line in r.pros_list %}<li>{% icon 'plus' 'icon--sm' %}{{ line }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+        {% if r.cons_list %}
+        <ul class="rv-points rv-points--con">
+            {% for line in r.cons_list %}<li>{% icon 'minus' 'icon--sm' %}{{ line }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if r.recommend is not None %}
+    <p class="rv-reco {% if not r.recommend %}is-no{% endif %}">
+        {% if r.recommend %}{% icon 'check-circle' 'icon--sm' %} این محصول را پیشنهاد می‌کنم{% else %}{% icon 'alert-circle' 'icon--sm' %} این محصول را پیشنهاد نمی‌کنم{% endif %}
+    </p>
+    {% endif %}
+
+    {% if r.store_reply %}
+    <div class="rv-reply">
+        <strong>{% icon 'message-circle' 'icon--sm' %} پاسخ ModaStore</strong>
+        <p>{{ r.store_reply|linebreaksbr }}</p>
+    </div>
+    {% endif %}
+
+    <footer class="rv-card__foot">
+        {% with voted=r.pk %}
+        <form method="post" action="{% url 'reviews:helpful' r.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="active" value="{% if voted in rv.voted_ids %}0{% else %}1{% endif %}">
+            <input type="hidden" name="next" value="{{ request.get_full_path }}#reviews">
+            <button type="submit" class="helpful-btn {% if voted in rv.voted_ids %}is-active{% endif %}" data-helpful
+                    {% if request.user.is_authenticated and r.user_id == request.user.id %}disabled{% endif %}>
+                {% icon 'thumbs-up' %} مفید بود
+                <span data-helpful-count {% if not r.helpful_count %}hidden{% endif %}>({{ r.helpful_count|fa_digits }})</span>
+            </button>
+        </form>
+        {% endwith %}
+    </footer>
+</article>

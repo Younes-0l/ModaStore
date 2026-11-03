@@ -75,6 +75,7 @@ TEMPLATES = [
             ],
         'builtins': [
             'catalog.templatetags.ui',
+            'catalog.templatetags.jalali',
         ],
         },
     },

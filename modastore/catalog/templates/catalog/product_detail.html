@@ -6,6 +6,8 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/product_detail.css' %}">
+<link rel="stylesheet" href="{% static 'css/reviews.css' %}">
+<link rel="stylesheet" href="{% static 'css/cart.css' %}">
 {% endblock %}
 
 
@@ -45,6 +47,16 @@
         <section class="info">
             <span class="muted">{{ product.brand.name }}</span>
             <h1>{{ product.name }}</h1>
+
+            {% if product.rating_count %}
+            <a href="#reviews" class="rating-line" data-open-tab="reviews">
+                {% stars product.rating_avg %}
+                <strong>{{ product.rating_avg|rating_text }}</strong>
+                <span class="muted">({{ product.rating_count|fa_digits }} نظر)</span>
+            </a>
+            {% else %}
+            <a href="{% url 'reviews:write' product.slug %}" class="rating-line muted">اولین نفری باشید که نظر می‌دهد</a>
+            {% endif %}
 
             <form method="post" action="{% url 'wishlist:set' %}" class="wish-form">
                 {% csrf_token %}
@@ -113,10 +125,13 @@
     </div>
 
     <!-- Tabs -->
-    <section class="tabs">
+    <section class="tabs" id="reviews">
         <div class="tabs__nav" role="tablist">
             <button type="button" role="tab" class="tab is-active" data-tab="desc" aria-selected="true">توضیحات</button>
             <button type="button" role="tab" class="tab" data-tab="specs" aria-selected="false">مشخصات فنی</button>
+            <button type="button" role="tab" class="tab" data-tab="reviews" aria-selected="false">
+                نظرات <span class="tab-count">({{ product.rating_count|fa_digits }})</span>
+            </button>
         </div>
         <div class="tab-panel is-active" id="tab-desc" role="tabpanel">
             {{ product.description|linebreaks|default:"توضیحاتی ثبت نشده است." }}
@@ -132,6 +147,9 @@
             {% empty %}
             <p class="muted">مشخصاتی ثبت نشده است.</p>
             {% endfor %}
+        </div>
+        <div class="tab-panel" id="tab-reviews" role="tabpanel">
+            {% include 'partials/section.html' %}
         </div>
     </section>
 
@@ -152,4 +170,5 @@
 
 {% block extra_js %}
 <script src="{% static 'js/product_detail.js' %}" defer></script>
+<script src="{% static 'js/reviews.js' %}" defer></script>
 {% endblock %}

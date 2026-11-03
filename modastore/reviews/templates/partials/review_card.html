@@ -8,7 +8,7 @@
                 {% if request.user.is_authenticated and r.user_id == request.user.id %}<span class="rv-badge">نظر شما</span>{% endif %}
             </div>
         </div>
-        <time class="rv-time" datetime="{{ r.created_at|date:'c' }}" title="{{ r.created_at|date:'Y/m/d H:i' }}">{{ r.created_at|ago }}</time>
+        <time class="rv-time" datetime="{{ r.created_at|date:'c' }}" title="{{ r.created_at|jdate }}">{{ r.created_at|ago }}</time>
     </header>
 
     <div class="rv-rating">

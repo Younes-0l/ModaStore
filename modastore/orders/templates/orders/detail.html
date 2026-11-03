@@ -14,7 +14,7 @@
         <header class="panel__head">
             <div>
                 <h1>سفارش <span dir="ltr">{{ order.number }}</span></h1>
-                <span class="muted">{{ order.created_at|date:"Y/m/d H:i" }}</span>
+                <span class="muted">{{ order.created_at|jdatetime_num }}</span>
             </div>
             <span class="status status--{{ order.status }}">{{ order.get_status_display }}</span>
         </header>

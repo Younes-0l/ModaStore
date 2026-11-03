@@ -22,7 +22,7 @@
             {% endfor %}
         </ul>
         <div class="order-card__bottom">
-            <span class="muted">{{ order.created_at|date:"Y/m/d H:i" }}</span>
+            <span class="muted">{{ order.created_at|jdate }}</span>
             <strong>{{ order.total|price_format }} تومان</strong>
         </div>
     </a>

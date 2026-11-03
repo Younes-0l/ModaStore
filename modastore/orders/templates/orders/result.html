@@ -33,6 +33,7 @@
                 <dl class="result-meta">
                     <div><dt>شماره سفارش</dt><dd dir="ltr">{{ order.number }}</dd></div>
                     {% if payment and payment.status == 'success' %}
+                    {% if order.paid_at %}<div><dt>تاریخ پرداخت</dt><dd>{{ order.paid_at|jdatetime_num }}</dd></div>{% endif %}
                     <div><dt>شماره پیگیری پرداخت</dt><dd dir="ltr">{{ payment.ref_id }}</dd></div>
                     {% endif %}
                     <div><dt>مبلغ</dt><dd>{{ order.total|price_format }} تومان</dd></div>

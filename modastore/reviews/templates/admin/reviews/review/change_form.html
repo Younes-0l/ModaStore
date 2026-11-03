@@ -1,0 +1,10 @@
+{% extends "admin/change_form.html" %}
+{% block submit_buttons_bottom %}
+{% if original and original.status == 'pending' %}
+<div class="submit-row">
+    <input type="submit" value="✓ تأیید و بعدی" name="_approve_next" class="default">
+    <input type="submit" value="✕ رد و بعدی" name="_reject_next">
+</div>
+{% endif %}
+{{ block.super }}
+{% endblock %}

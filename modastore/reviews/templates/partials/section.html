@@ -1,0 +1,84 @@
+<div class="rv">
+    <div class="rv-summary">
+        <div class="rv-score">
+            {% if product.rating_count %}
+            <span class="rv-score__num">{{ product.rating_avg|rating_text }}<small> از ۵</small></span>
+            {% stars product.rating_avg 'stars--lg' %}
+            <span class="muted">از {{ product.rating_count|fa_digits }} نظر</span>
+            {% if rv.recommend_pct is not None %}
+            <span class="rv-recommend">{% icon 'check-circle' 'icon--sm' %} {{ rv.recommend_pct|fa_digits }}٪ کاربران این محصول را پیشنهاد کرده‌اند</span>
+            {% endif %}
+            {% else %}
+            <span class="rv-score__num">–</span>
+            <span class="muted">هنوز نظری ثبت نشده است</span>
+            {% endif %}
+        </div>
+
+        <div class="rv-bars" aria-label="توزیع امتیازها">
+            {% for row in rv.rows %}
+            <div class="rv-bar">
+                <span>{{ row.star|fa_digits }} ★</span>
+                <span class="rv-bar__track"><span class="rv-bar__fill" style="width: {{ row.pct }}%"></span></span>
+                <span>{{ row.n|fa_digits }}</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="rv-cta">
+            {% if not user.is_authenticated %}
+            <strong>تجربه‌ات را با دیگران به اشتراک بگذار</strong>
+            <a href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}%23reviews" class="btn btn--block">ورود و ثبت نظر</a>
+            {% elif rv.my_review %}
+            <strong>نظر شما برای این محصول</strong>
+            {% if rv.my_review.status == 'pending' %}
+            <p class="rv-note rv-note--pending">{% icon 'clock' 'icon--sm' %} در صف بررسی است و پس از تأیید منتشر می‌شود.</p>
+            {% elif rv.my_review.status == 'rejected' %}
+            <p class="rv-note rv-note--rejected">{% icon 'alert-circle' 'icon--sm' %} با قوانین انتشار هم‌خوانی نداشت. می‌توانید ویرایش و دوباره ارسال کنید.</p>
+            {% endif %}
+            <div class="rv-cta__row">
+                <a href="{% url 'reviews:write' product.slug %}" class="btn btn--outline btn--sm">{% icon 'edit' %} ویرایش</a>
+                <form method="post" action="{% url 'reviews:delete' rv.my_review.pk %}" onsubmit="return confirm('نظر شما حذف شود؟');">
+                    {% csrf_token %}
+                    <button type="submit" class="remove-btn">{% icon 'trash' %} حذف</button>
+                </form>
+            </div>
+            {% else %}
+            <strong>این محصول را داشتی؟ نظرت را بنویس</strong>
+            <a href="{% url 'reviews:write' product.slug %}" class="btn btn--block">{% icon 'edit' %} ثبت نظر</a>
+            <small class="muted">اگر این کالا را از ModaStore خریده باشی، نظرت با نشان «خریدار» نمایش داده می‌شود.</small>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if product.rating_count %}
+    <div class="rv-toolbar">
+        <div class="rv-chips">
+            {% for key, label in rv.sorts %}
+            <a class="rv-chip {% if rv.sort == key %}is-active{% endif %}"
+               href="?{% if rv.q_sort %}{{ rv.q_sort }}&{% endif %}rsort={{ key }}#reviews">{{ label }}</a>
+            {% endfor %}
+        </div>
+        {% if rv.buyers_only %}
+        <a class="rv-chip is-active" href="?{{ rv.q_buyers }}#reviews">{% icon 'shield-check' 'icon--sm' %} فقط خریداران ✕</a>
+        {% else %}
+        <a class="rv-chip" href="?{% if rv.q_buyers %}{{ rv.q_buyers }}&{% endif %}rbuyers=1#reviews">{% icon 'shield-check' 'icon--sm' %} فقط خریداران</a>
+        {% endif %}
+    </div>
+
+    <div class="rv-list">
+        {% for r in rv.page_obj %}
+            {% include 'partials/review_card.html' %}
+        {% empty %}
+        <p class="muted rv-empty">نظری با این فیلتر پیدا نشد.</p>
+        {% endfor %}
+    </div>
+
+    {% if rv.page_obj.has_other_pages %}
+    <nav class="pagination" aria-label="صفحه‌بندی نظرات">
+        {% if rv.page_obj.has_previous %}<a href="?{% if rv.q_page %}{{ rv.q_page }}&{% endif %}rpage={{ rv.page_obj.previous_page_number }}#reviews">قبلی</a>{% endif %}
+        <span>صفحه {{ rv.page_obj.number|fa_digits }} از {{ rv.paginator.num_pages|fa_digits }}</span>
+        {% if rv.page_obj.has_next %}<a href="?{% if rv.q_page %}{{ rv.q_page }}&{% endif %}rpage={{ rv.page_obj.next_page_number }}#reviews">بعدی</a>{% endif %}
+    </nav>
+    {% endif %}
+    {% endif %}
+</div>

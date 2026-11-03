@@ -1,0 +1,89 @@
+{% extends 'parent/base.html' %}
+{% load static %}
+
+{% block title %}ثبت نظر برای {{ product.name }} | ModaStore{% endblock %}
+{% block body_class %}is-checkout{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+<link rel="stylesheet" href="{% static 'css/reviews.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container rw-page">
+    <div class="rw-grid">
+        <form method="post" class="rw-form" novalidate>
+            {% csrf_token %}
+            <h1>{% icon 'edit' %} {% if existing %}ویرایش نظر{% else %}ثبت نظر{% endif %}</h1>
+            {% if existing %}<p class="rv-note rv-note--pending">{% icon 'clock' 'icon--sm' %} پس از ویرایش، نظر شما دوباره بررسی می‌شود.</p>{% endif %}
+            {% if form.non_field_errors %}<div class="form-error">{{ form.non_field_errors.0 }}</div>{% endif %}
+
+            <fieldset class="rate-input">
+                <legend>امتیاز شما به این محصول</legend>
+                <div class="rate-line">
+                    <div class="rate-stars">
+                        {% for value, _ in form.rating.field.choices %}
+                        <input type="radio" name="rating" id="rate-{{ value }}" value="{{ value }}"
+                               {% if form.rating.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                        <label for="rate-{{ value }}" title="{{ value|fa_digits }} از ۵">{% icon 'star-fill' %}</label>
+                        {% endfor %}
+                    </div>
+                    <span class="rate-text" data-rate-text></span>
+                </div>
+                {% if form.rating.errors %}<small class="field-error">{{ form.rating.errors.0 }}</small>{% endif %}
+            </fieldset>
+
+            <label class="field">
+                <span>{{ form.title.label }}</span>
+                {{ form.title }}
+                {% if form.title.errors %}<small class="field-error">{{ form.title.errors.0 }}</small>{% endif %}
+            </label>
+
+            <label class="field">
+                <span>{{ form.body.label }}</span>
+                {{ form.body }}
+                {% if form.body.errors %}<small class="field-error">{{ form.body.errors.0 }}</small>{% endif %}
+            </label>
+
+            <div class="rw-two">
+                <label class="field">
+                    <span>{{ form.pros.label }}</span>
+                    {{ form.pros }}
+                    {% if form.pros.errors %}<small class="field-error">{{ form.pros.errors.0 }}</small>{% endif %}
+                </label>
+                <label class="field">
+                    <span>{{ form.cons.label }}</span>
+                    {{ form.cons }}
+                    {% if form.cons.errors %}<small class="field-error">{{ form.cons.errors.0 }}</small>{% endif %}
+                </label>
+            </div>
+
+            <div class="rw-actions">
+                <div class="reco-pills">
+                    {% for radio in form.recommend %}
+                    <label>{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>
+                    {% endfor %}
+                </div>
+                <div class="rw-buttons">
+                    <button type="submit" class="btn btn--lg">ثبت نظر</button>
+                    <a href="{% url 'catalog:product_detail' product.slug %}#reviews" class="btn btn--outline btn--lg">انصراف</a>
+                </div>
+            </div>
+        </form>
+
+        <aside class="rw-side">
+            <div class="rw-product">
+                {% if image %}<img src="{{ image.image.url }}" alt="">{% endif %}
+                <div><span class="muted">{{ product.brand.name }}</span><strong>{{ product.name }}</strong></div>
+            </div>
+            <ul class="rw-rules">
+                <li>{% icon 'check-circle' 'icon--sm' %} تجربه واقعی خودتان را بنویسید.</li>
+                <li>{% icon 'check-circle' 'icon--sm' %} از درج لینک، آیدی و شماره تماس خودداری کنید.</li>
+                <li>{% icon 'check-circle' 'icon--sm' %} نظرها قبل از انتشار بررسی می‌شوند.</li>
+                <li>{% icon 'shield-check' 'icon--sm' %} نظر خریداران با نشان «خریدار» نمایش داده می‌شود.</li>
+            </ul>
+        </aside>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/reviews.js' %}" defer></script>{% endblock %}

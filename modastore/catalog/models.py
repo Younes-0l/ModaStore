@@ -101,6 +101,9 @@ class Product(SlugModel):
     category = models.ForeignKey(Category, verbose_name='دسته‌بندی', on_delete=models.PROTECT, related_name='products')
     attribute_values = models.ManyToManyField(AttributeValue, through='ProductAttribute', related_name='products', blank=True)
     # Data Fields
+    rating_avg = models.DecimalField('میانگین امتیاز', max_digits=3, decimal_places=2, default=0)
+    rating_count = models.PositiveIntegerField('تعداد نظرات تأییدشده', default=0)
+
     description = models.TextField('توضیحات', blank=True)
     is_active = models.BooleanField('فعال', default=True)
     # Date Fields

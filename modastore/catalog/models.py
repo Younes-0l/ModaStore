@@ -151,6 +151,15 @@ class ProductVariant(models.Model):
     price = models.PositiveBigIntegerField('قیمت (تومان)')
     old_price = models.PositiveBigIntegerField('قیمت قبل از تخفیف (تومان)', null=True, blank=True)
     stock = models.PositiveIntegerField('موجودی', default=0)
+    updated_at = models.DateTimeField('آخرین بروزرسانی', auto_now=True, db_index=True)
+
+    def save(self, *args, **kwargs):
+        # auto_now is skipped when update_fields is given, so add it explicitly
+        update_fields = kwargs.get('update_fields')
+        if update_fields is not None:
+            kwargs['update_fields'] = {*update_fields, 'updated_at'}
+        super().save(*args, **kwargs)
+
 
     class Meta:
         verbose_name = 'تنوع محصول'

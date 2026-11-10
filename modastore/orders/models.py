@@ -112,11 +112,18 @@ class Payment(models.Model):
         PENDING = 'pending', 'در انتظار'
         SUCCESS = 'success', 'موفق'
         FAILED = 'failed', 'ناموفق'
+        REFUND_NEEDED = 'refund_needed', 'نیاز به بازگشت وجه'
+        REFUNDED = 'refunded', 'بازگشت وجه انجام شد'
+
+    class Gateway(models.TextChoices):
+        MOCK = 'mock', 'آزمایشی'
+        ZARINPAL = 'zarinpal', 'زرین‌پال'
 
     order = models.ForeignKey(Order, on_delete=models.PROTECT, related_name='payments')
+    gateway = models.CharField('درگاه', max_length=20, choices=Gateway.choices, default=Gateway.MOCK)
     authority = models.CharField(max_length=64, unique=True, default=new_authority, editable=False)
     amount = models.PositiveBigIntegerField('مبلغ (تومان)')
-    status = models.CharField('وضعیت', max_length=10, choices=Status.choices, default=Status.PENDING)
+    status = models.CharField('وضعیت', max_length=20, choices=Status.choices, default=Status.PENDING)
     ref_id = models.CharField('شماره پیگیری', max_length=64, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     paid_at = models.DateTimeField(null=True, blank=True)

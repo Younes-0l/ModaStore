@@ -1,0 +1,22 @@
+{% extends 'parent/base.html' %}
+{% load static %}
+
+{% block title %}بررسی پرداخت | ModaStore{% endblock %}
+{% block body_class %}is-checkout{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/checkout.css' %}">{% endblock %}
+
+{% block content %}
+<div class="container checkout-page">
+    <div class="checkout-body">
+        <section class="panel result-card">
+            <span class="result-icon result-icon--canceled">{% icon 'clock' %}</span>
+            <h1>پرداخت در حال بررسی است</h1>
+            <p class="muted">ارتباط با درگاه برقرار نشد. اگر مبلغ از حساب شما کسر شده، دکمه زیر را بزنید تا دوباره بررسی شود. اگر مشکل ادامه داشت، شماره سفارش <strong dir="ltr">{{ order.number }}</strong> را به پشتیبانی اعلام کنید.</p>
+            <div class="result-actions">
+                <a href="{{ retry_url }}" class="btn btn--lg">بررسی دوباره</a>
+                <a href="{% url 'orders:list' %}" class="btn btn--outline btn--lg">سفارش‌های من</a>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

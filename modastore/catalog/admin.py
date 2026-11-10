@@ -3,6 +3,7 @@ from .models import (
     Attribute, AttributeValue, Brand, Category,
     Product, ProductAttribute, ProductImage, ProductVariant,
 )
+from .admin_utils import jalali_column
 
 
 # Register your models here.
@@ -62,8 +63,9 @@ class ProductImageInline(admin.TabularInline):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'brand', 'category', 'is_active', 'created_at')
+    created_at_j = jalali_column('created_at', 'تاریخ ایجاد')
     list_filter = ('is_active', 'brand', 'category')
+    list_display = ('name', 'brand', 'category', 'is_active', 'created_at_j')
     search_fields = ('name', 'variants__sku')
     autocomplete_fields = ('brand', 'category')
     list_select_related = ('brand', 'category')

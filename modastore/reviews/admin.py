@@ -7,6 +7,7 @@ from django.utils.html import format_html
 from django.utils.text import Truncator
 from .models import Review
 from .services import services
+from catalog.admin_utils import jalali_column
 
 
 # Register your models here.
@@ -41,7 +42,9 @@ class StatusFilter(admin.SimpleListFilter):
 
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
-    list_display = ('status_badge', 'stars', 'excerpt', 'product', 'reviewer', 'is_verified_buyer', 'created_at')
+    created_at_j = jalali_column('created_at', 'تاریخ ثبت')
+    moderated_at_j = jalali_column('moderated_at', 'تاریخ بررسی')
+    list_display = ('status_badge', 'stars', 'excerpt', 'product', 'reviewer', 'is_verified_buyer', 'created_at_j')
     list_display_links = ('excerpt',)
     list_filter = (StatusFilter, 'is_verified_buyer', 'rating')
     search_fields = ('body', 'title', 'product__name', 'user__phone_number')
@@ -51,12 +54,12 @@ class ReviewAdmin(admin.ModelAdmin):
     actions_on_top = True
     readonly_fields = (
         'product', 'user', 'rating', 'is_verified_buyer', 'purchased_variant',
-        'helpful_count', 'created_at', 'moderated_at', 'moderated_by',
+        'helpful_count', 'created_at_j', 'moderated_at_j', 'moderated_by',
     )
     fieldsets = (
         ('وضعیت', {'fields': ('status', 'store_reply')}),
         ('نظر', {'fields': ('product', 'user', 'rating', 'recommend', 'title', 'body', 'pros', 'cons')}),
-        ('اطلاعات', {'fields': ('is_verified_buyer', 'purchased_variant', 'helpful_count', 'created_at', 'moderated_at', 'moderated_by')}),
+        ('اطلاعات', {'fields': ('is_verified_buyer', 'purchased_variant', 'helpful_count', 'created_at_j', 'moderated_at_j', 'moderated_by')}),
     )
 
     # ----- list columns -----

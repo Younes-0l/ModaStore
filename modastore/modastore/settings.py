@@ -46,6 +46,10 @@ INSTALLED_APPS = [
     'orders.apps.OrdersConfig',
     'wishlist.apps.WishlistConfig',
     'reviews.apps.ReviewsConfig',
+    'rest_framework',
+    'drf_spectacular',
+    'drf_spectacular_sidecar',
+    'api.apps.ApiConfig',
 ]
 
 MIDDLEWARE = [
@@ -164,9 +168,37 @@ SMS_BACKEND = os.environ.get('SMS_BACKEND', 'console')
 # Orders and payment
 SHIPPING_FEE = 50_000                 # Toman, flat rate
 FREE_SHIPPING_THRESHOLD = None        # e.g. 10_000_000 to enable free shipping
-ORDER_PAYMENT_TIMEOUT_MINUTES = 30
-PAYMENT_GATEWAY = os.environ.get('PAYMENT_GATEWAY', 'mock')
+ORDER_PAYMENT_TIMEOUT_MINUTES = 1
+
+PAYMENT_GATEWAY = os.environ.get('PAYMENT_GATEWAY', 'mock')   # 'mock' | 'zarinpal'
+ZARINPAL_MERCHANT_ID = os.environ.get('ZARINPAL_MERCHANT_ID', '')
+ZARINPAL_SANDBOX = os.environ.get('ZARINPAL_SANDBOX', 'True') == 'True'
+SITE_URL = os.environ.get('SITE_URL', 'http://127.0.0.1:8000')   # used to build the callback URL
 
 # Reviews
 REVIEWS_TRUSTED_MIN_APPROVED = 2   # approved reviews needed for auto-approval (None disables)
 REVIEWS_MAX_NEW_PER_HOUR = 5
+
+# API Settings
+
+TOROB_API_TOKEN = os.environ.get('TOROB_API_TOKEN', '')
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_RENDERER_CLASSES': ['rest_framework.renderers.JSONRenderer'],
+    'DEFAULT_AUTHENTICATION_CLASSES': [],          # public read-only API: no sessions, no CSRF2
+    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.AllowAny'],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+    'DEFAULT_THROTTLE_CLASSES': ['rest_framework.throttling.AnonRateThrottle'],
+    'DEFAULT_THROTTLE_RATES': {'anon': '120/min'},
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'ModaStore API',
+    'DESCRIPTION': 'Read-only catalog API (products and categories).',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SWAGGER_UI_DIST': 'SIDECAR',
+    'REDOC_DIST': 'SIDECAR',
+}

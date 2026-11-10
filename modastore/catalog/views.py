@@ -229,8 +229,10 @@ class ProductDetailView(DetailView):
         product = self.object
         variants = list(product.variants.all())  # already prefetched, ordered by price
 
-        # Default selection: cheapest in-stock variant, else the first one
-        default = next((v for v in variants if v.in_stock), variants[0] if variants else None)
+        # ?variant=<id> preselects a variant (the price comparison feed links to it)
+        vid = self.request.GET.get('variant', '')
+        selected = next((v for v in variants if str(v.pk) == vid), None) if vid.isdigit() else None
+        default = selected or next((v for v in variants if v.in_stock), variants[0] if variants else None)
 
         ctx['variants'] = variants
         ctx['default_variant'] = default

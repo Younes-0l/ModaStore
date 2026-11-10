@@ -18,6 +18,8 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from api import torob
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,6 +29,9 @@ urlpatterns = [
     path('', include('orders.urls')),
     path('wishlist/', include('wishlist.urls')),
     path('reviews/', include('reviews.urls')),
+    path('api/', include('api.urls')),
+
+    path('torob_api/v3/products', torob.products_v3, name='torob_products'),
 ]
 
 if settings.DEBUG:

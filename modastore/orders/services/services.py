@@ -7,7 +7,12 @@ from django.urls import reverse
 from django.utils import timezone
 from catalog.models import ProductImage, ProductVariant
 from ..models import Order, OrderItem, Payment, generate_order_number
+import logging
+from .. import gateway
 
+
+logger = logging.getLogger(__name__)
+SETTLED = (Payment.Status.SUCCESS, Payment.Status.REFUND_NEEDED, Payment.Status.REFUNDED)
 
 class CheckoutError(Exception):
     """Raised with a user-facing (Persian) message."""
@@ -127,32 +132,129 @@ def expire_if_overdue(order):
     return order
 
 
+def _callback_url():
+    return settings.SITE_URL.rstrip('/') + reverse('orders:callback')
+
+
 def start_payment(order):
     """Create a payment attempt and return the URL the user must be sent to."""
+    if order.status != Order.Status.PENDING or order.expires_at <= timezone.now():
+        raise CheckoutError('مهلت پرداخت این سفارش تمام شده است.')
+
+    use_mock = settings.PAYMENT_GATEWAY == 'mock'
     with transaction.atomic():
         order.payments.filter(status=Payment.Status.PENDING).update(status=Payment.Status.FAILED)
-        payment = Payment.objects.create(order=order, amount=order.total)
-    if settings.PAYMENT_GATEWAY == 'mock':
+        payment = Payment.objects.create(
+            order=order, amount=order.total,
+            gateway=Payment.Gateway.MOCK if use_mock else Payment.Gateway.ZARINPAL,
+        )
+    if use_mock:
         return reverse('orders:mock_gateway', args=[payment.authority])
-    raise NotImplementedError('A real payment gateway is added in phase 5.')
+
+    try:
+        authority = gateway.request_payment(
+            amount=order.total, callback_url=_callback_url(),
+            description=f'سفارش {order.number}',
+            mobile=order.user.phone_number, order_number=order.number,
+        )
+    except gateway.GatewayError as exc:
+        Payment.objects.filter(pk=payment.pk).update(status=Payment.Status.FAILED)
+        raise CheckoutError(str(exc))
+    # From now on the gateway's authority identifies this payment
+    Payment.objects.filter(pk=payment.pk).update(authority=authority)
+    return gateway.start_url(authority)
 
 
-def finish_payment(payment_id, success):
-    """Idempotent: a payment that is already settled is returned unchanged."""
+def _reserve_again(order):
+    """Take stock again for an order that was canceled before its money arrived."""
+    items = list(order.items.order_by('variant_id'))
+    if not items or any(i.variant_id is None for i in items):
+        return False
+    variants = {
+        v.pk: v for v in
+        ProductVariant.objects.select_for_update(of=('self',))
+        .select_related('product')
+        .filter(pk__in=[i.variant_id for i in items]).order_by('pk')
+    }
+    for i in items:
+        v = variants.get(i.variant_id)
+        if v is None or v.stock < i.quantity:
+            return False
+    for i in items:
+        v = variants[i.variant_id]
+        v.stock -= i.quantity
+        v.save(update_fields=['stock'])
+    return True
+
+
+def _apply_paid(payment_id, ref_id):
+    """Record a payment that the gateway confirmed. Idempotent and safe under concurrency."""
     with transaction.atomic():
+        order_id = Payment.objects.values_list('order_id', flat=True).get(pk=payment_id)
+        # Same lock order everywhere (order, then payment): no deadlock with cancel_order
+        order = Order.objects.select_for_update().get(pk=order_id)
         payment = Payment.objects.select_for_update().get(pk=payment_id)
-        if payment.status != Payment.Status.PENDING:
+        if payment.status in SETTLED:
             return payment
-        order = Order.objects.select_for_update().get(pk=payment.order_id)
+
         now = timezone.now()
-        if success and order.status == Order.Status.PENDING and order.expires_at > now:
+        payment.ref_id = ref_id
+        payment.paid_at = now
+
+        can_fulfil = False
+        if payment.amount == order.total:
+            if order.status == Order.Status.PENDING:
+                # Money arrived: accept it even if the window just closed but the
+                # order was not canceled yet (its stock is still reserved)
+                can_fulfil = True
+            elif order.status == Order.Status.CANCELED:
+                can_fulfil = _reserve_again(order)
+
+        if can_fulfil:
             payment.status = Payment.Status.SUCCESS
-            payment.ref_id = f'MOCK-{secrets.randbelow(10**8):08d}'
-            payment.paid_at = now
             order.status = Order.Status.PROCESSING
             order.paid_at = now
             order.save(update_fields=['status', 'paid_at'])
+            order.payments.filter(status=Payment.Status.PENDING).exclude(pk=payment.pk).update(
+                status=Payment.Status.FAILED,
+            )
         else:
-            payment.status = Payment.Status.FAILED
+            # Paid twice, amount mismatch, or the stock is gone: an admin must refund
+            payment.status = Payment.Status.REFUND_NEEDED
+            logger.warning('Payment %s (order %s) needs a refund', payment.pk, order.number)
         payment.save()
+        return payment
+
+
+def settle_gateway_payment(payment, status_ok):
+    """Called when the user comes back from the bank. Safe to call many times."""
+    if payment.status in SETTLED:
+        return payment
+    if not status_ok:
+        Payment.objects.filter(pk=payment.pk, status=Payment.Status.PENDING).update(
+            status=Payment.Status.FAILED,
+        )
+        return payment
+    # Network call: no DB locks are held here. A payment we marked FAILED earlier
+    # (a superseded attempt or an expired order) is verified too, since the gateway is the truth.
+    paid, ref_id = gateway.verify(payment.amount, payment.authority)
+    if not paid:
+        Payment.objects.filter(pk=payment.pk, status=Payment.Status.PENDING).update(
+            status=Payment.Status.FAILED,
+        )
+        return payment
+    return _apply_paid(payment.pk, ref_id)
+
+
+def finish_payment(payment_id, success):
+    """Mock gateway: same rules as the real one, so both paths are testable."""
+    payment = Payment.objects.get(pk=payment_id)
+    if payment.status in SETTLED:
+        return payment
+    if success:
+        return _apply_paid(payment_id, f'MOCK-{secrets.randbelow(10**8):08d}')
+    Payment.objects.filter(pk=payment_id, status=Payment.Status.PENDING).update(
+        status=Payment.Status.FAILED,
+    )
+    payment.refresh_from_db()
     return payment

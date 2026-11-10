@@ -11,6 +11,7 @@ urlpatterns = [
     path('checkout/cancel/<str:number>/', views.cancel, name='cancel'),
     path('checkout/result/<str:number>/', views.result, name='result'),
     path('payment/gateway/<str:authority>/', views.mock_gateway, name='mock_gateway'),
+    path('payment/callback/', views.payment_callback, name='callback'),
     path('orders/', views.order_list, name='list'),
     path('orders/<str:number>/', views.order_detail, name='detail'),
 ]

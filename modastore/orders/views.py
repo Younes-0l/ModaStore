@@ -11,6 +11,7 @@ from cart import services as cart_services
 from .services import services
 from .forms import CheckoutAddressForm
 from .models import Order, OrderItem, Payment
+from .gateway import GatewayError
 
 
 SESSION_ADDRESS_KEY = 'checkout_address_id'
@@ -125,7 +126,11 @@ def pay(request, number):
     if order.status != Order.Status.PENDING:
         return redirect('orders:result', number=order.number)
     if request.method == 'POST':
-        return redirect(services.start_payment(order))
+        try:
+            return redirect(services.start_payment(order))
+        except services.CheckoutError as e:
+            messages.error(request, str(e))
+            return redirect('orders:pay', number=order.number)
     return render(request, 'orders/pay.html', {'order': order})
 
 
@@ -147,8 +152,10 @@ def _mock_only():
 def mock_gateway(request, authority):
     """Development-only fake bank page."""
     _mock_only()
-    payment = get_object_or_404(Payment, authority=authority, order__user=request.user)
-    if payment.status != Payment.Status.PENDING:
+    payment = get_object_or_404(
+        Payment, authority=authority, gateway=Payment.Gateway.MOCK, order__user=request.user,
+    )
+    if payment.status in services.SETTLED:
         return redirect('orders:result', number=payment.order.number)
     if request.method == 'POST':
         services.finish_payment(payment.pk, success=request.POST.get('result') == 'success')
@@ -166,7 +173,7 @@ def result(request, number):
     return render(request, 'orders/result.html', {
         'order': order,
         'payment': order.payments.first(),
-        # 6 means "every step is done"
+        'refund': order.payments.filter(status=Payment.Status.REFUND_NEEDED).first(),
         'step': 6 if order.is_paid else 4,
     })
 
@@ -189,3 +196,17 @@ def order_detail(request, number):
     )
     order = services.expire_if_overdue(order)
     return render(request, 'orders/detail.html', {'order': order})
+
+def payment_callback(request):
+    """The bank sends the user here with ?Authority=...&Status=OK|NOK."""
+    payment = get_object_or_404(
+        Payment.objects.select_related('order'),
+        authority=request.GET.get('Authority', ''), gateway=Payment.Gateway.ZARINPAL,
+    )
+    try:
+        services.settle_gateway_payment(payment, status_ok=request.GET.get('Status') == 'OK')
+    except GatewayError:
+        return render(request, 'orders/verify_retry.html', {
+            'order': payment.order, 'retry_url': request.get_full_path(),
+        })
+    return redirect('orders:result', number=payment.order.number)

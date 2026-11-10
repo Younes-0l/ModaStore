@@ -18,6 +18,10 @@
                 <span class="result-icon result-icon--success">{% icon 'check' %}</span>
                 <h1>سفارش شما با موفقیت ثبت شد</h1>
                 <p class="muted">پرداخت انجام شد و سفارش در حال آماده‌سازی است.</p>
+                {% elif order.status == 'refund_needed' %}
+                <span class="result-icon result-icon--failed">{% icon 'alert-circle' %}</span>
+                <h1>پرداخت دریافت شد، اما سفارش ثبت نشد</h1>
+                <p class="muted">موجودی کالا در فاصله‌ی پرداخت شما تمام شد. مبلغ پرداختی به حساب شما بازگردانده می‌شود. برای پیگیری شماره سفارش را به پشتیبانی اعلام کنید.</p>
                 {% elif order.status == 'pending' %}
                 <span class="result-icon result-icon--failed">{% icon 'x-circle' %}</span>
                 <h1>پرداخت انجام نشد</h1>

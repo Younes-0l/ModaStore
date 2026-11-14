@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'drf_spectacular_sidecar',
     'api.apps.ApiConfig',
+    'pages.apps.PagesConfig',
 ]
 
 MIDDLEWARE = [

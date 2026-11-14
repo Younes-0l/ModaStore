@@ -1,0 +1,24 @@
+{% extends 'parent/base.html' %}
+{% load static %}
+
+{% block title %}دسترسی ممکن نیست | ModaStore{% endblock %}
+{% block body_class %}is-error-page{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'pages/css/pages.css' %}">{% endblock %}
+
+{% block content %}
+{% include 'pages/partials/sprite.html' %}
+<section class="pg-error-hero pg-error-hero--center">
+    <div class="container">
+        <div class="pg-error-copy pg-error-copy--center">
+            <span class="pg-ico pg-ico--xl"><svg class="pg-i"><use href="#i-lock"/></svg></span>
+            <span class="pg-eyebrow">خطای ۴۰۳</span>
+            <h1>اجازه‌ی دیدن این صفحه را نداری</h1>
+            <p>یا باید وارد حسابت شوی، یا نشست امنیتی صفحه منقضی شده است. صفحه را دوباره باز کن و اگر مشکل ادامه داشت با ما تماس بگیر.</p>
+            <div class="pg-error-actions">
+                <a href="{% url 'accounts:login' %}" class="pg-btn pg-btn--lg">ورود به حساب</a>
+                <a href="{% url 'catalog:home' %}" class="pg-btn pg-btn--lg pg-btn--outline">بازگشت به خانه</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

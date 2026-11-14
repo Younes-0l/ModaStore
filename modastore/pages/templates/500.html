@@ -1,0 +1,69 @@
+{% load static %}<!DOCTYPE html>
+{# Standalone on purpose: Django renders 500.html without a request or context processors, so it must not extend base.html or touch the database. #}
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <title>خطای سرور | ModaStore</title>
+    <style>
+        @font-face { font-family: 'Vazirmatn'; src: url('{% static "fonts/vazir-matn/ttf/Vazirmatn-Regular.ttf" %}') format('truetype'); font-display: swap; }
+        :root { --primary:#5b4ef0; --primary-dark:#4338ca; --soft:#eeedfe; --ink:#0f0f1a; --muted:#6b7280; }
+        * { box-sizing: border-box; }
+        html, body { height: 100%; margin: 0; }
+        body {
+            font-family: 'Vazirmatn', Tahoma, sans-serif; color: var(--ink); line-height: 1.8;
+            display: grid; grid-template-rows: auto 1fr auto; min-height: 100vh; min-height: 100dvh;
+            background: radial-gradient(900px 420px at 85% -10%, #e0e7ff 0%, transparent 60%), #fff;
+        }
+        header { padding: 18px 16px; max-width: 1100px; width: 100%; margin: 0 auto; }
+        .logo { font-weight: 700; font-size: 1.35rem; color: var(--ink); text-decoration: none; }
+        .logo span { color: var(--primary); }
+        main { display: grid; place-items: center; padding: 16px; }
+        .card { max-width: 520px; width: 100%; text-align: center; }
+        svg { width: min(240px, 62vw); height: auto; margin-bottom: 8px; }
+        .code { display: inline-block; padding: 2px 14px; border-radius: 999px; background: var(--soft); color: var(--primary-dark); font-size: .85rem; font-weight: 700; }
+        h1 { font-size: clamp(1.4rem, 5.5vw, 2rem); margin: 12px 0 8px; }
+        p { color: var(--muted); margin: 0 auto 22px; max-width: 44ch; }
+        .actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 24px;
+            border-radius: 12px; border: 1px solid var(--primary); background: var(--primary); color: #fff;
+            font: inherit; font-weight: 700; text-decoration: none; cursor: pointer;
+        }
+        .btn:hover { background: var(--primary-dark); }
+        .btn--outline { background: #fff; color: var(--primary); }
+        .btn--outline:hover { background: var(--soft); }
+        footer { padding: 16px; text-align: center; color: var(--muted); font-size: .85rem; }
+        @media (max-width: 479px) { .btn { flex: 1 1 100%; } }
+        @media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+            .spark { animation: blink 2.4s ease-in-out infinite; transform-origin: center; }
+            @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
+        }
+    </style>
+</head>
+<body>
+    <header><a class="logo" href="/">Moda<span>Store</span></a></header>
+    <main>
+        <div class="card">
+            <svg viewBox="0 0 240 200" role="img" aria-label="خطای سرور">
+                <circle cx="120" cy="104" r="86" fill="#eeedfe"/>
+                <rect x="62" y="48" width="116" height="92" rx="14" fill="#4338ca"/>
+                <rect x="70" y="56" width="100" height="70" rx="8" fill="#0f0f1a"/>
+                <rect x="102" y="148" width="36" height="8" rx="4" fill="#4338ca"/>
+                <rect x="86" y="160" width="68" height="8" rx="4" fill="#a5b4fc"/>
+                <path d="M124 64l-22 34h18l-6 24 26-38h-18z" fill="#facc15" class="spark"/>
+                <circle cx="48" cy="60" r="7" fill="#c7d2fe"/><circle cx="196" cy="46" r="5" fill="#a5b4fc"/><circle cx="200" cy="140" r="8" fill="#ddd6fe"/>
+            </svg>
+            <span class="code">خطای ۵۰۰</span>
+            <h1>یک مشکل از سمت ما پیش آمد</h1>
+            <p>این خطا تقصیر تو نیست. موضوع ثبت شده و در حال بررسی است. چند لحظه‌ی دیگر دوباره امتحان کن؛ اگر در حال پرداخت بودی، وضعیت سفارش را در «سفارش‌های من» ببین تا مطمئن شوی دوبار پرداخت نمی‌کنی.</p>
+            <div class="actions">
+                <button type="button" class="btn" onclick="location.reload()">تلاش دوباره</button>
+                <a class="btn btn--outline" href="/">بازگشت به خانه</a>
+            </div>
+        </div>
+    </main>
+    <footer>© ModaStore</footer>
+</body>
+</html>

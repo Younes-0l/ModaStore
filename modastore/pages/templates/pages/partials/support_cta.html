@@ -1,0 +1,12 @@
+<section class="container pg-section">
+    <div class="pg-cta pg-reveal">
+        <div>
+            <h2>{{ heading|default:'هنوز سوالی داری؟' }}</h2>
+            <p>{{ text|default:'تیم پشتیبانی ModaStore شنبه تا چهارشنبه ۹ تا ۱۸ و پنجشنبه‌ها ۹ تا ۱۴ پاسخگوی توست.' }}</p>
+        </div>
+        <div class="pg-cta__actions">
+            <a class="pg-btn pg-btn--light" href="{% url 'pages:contact' %}"><svg class="pg-i"><use href="#i-message"/></svg>تماس با ما</a>
+            <a class="pg-btn pg-btn--ghost" href="{% url 'pages:faq' %}">سوالات متداول</a>
+        </div>
+    </div>
+</section>

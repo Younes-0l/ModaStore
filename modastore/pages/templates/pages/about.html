@@ -1,0 +1,73 @@
+{% extends 'parent/base.html' %}
+{% load static %}
+
+{% block title %}درباره ما | ModaStore{% endblock %}
+{% block body_class %}is-static-page{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'pages/css/pages.css' %}">{% endblock %}
+{% block extra_js %}<script src="{% static 'pages/js/pages.js' %}" defer></script>{% endblock %}
+
+{% block content %}
+{% include 'pages/partials/sprite.html' %}
+{% include 'pages/partials/hero.html' with title="درباره ModaStore" lead="ما باور داریم خرید یک گجت باید به اندازه‌ی استفاده از آن لذت‌بخش باشد: قیمت شفاف، کالای اصل و پشتیبانی‌ای که واقعاً جواب می‌دهد." %}
+
+<section class="container pg-section pg-section--pull">
+    <div class="pg-stats">
+        <div class="pg-stat"><strong data-count="12000">۱۲٬۰۰۰+</strong><span>مشتری راضی</span></div>
+        <div class="pg-stat"><strong data-count="850">۸۵۰+</strong><span>کالای دیجیتال</span></div>
+        <div class="pg-stat"><strong data-count="40">۴۰+</strong><span>برند معتبر</span></div>
+        <div class="pg-stat"><strong data-count="98" data-suffix="٪">۹۸٪</strong><span>رضایت از خرید</span></div>
+    </div>
+</section>
+
+<section class="container pg-section">
+    <div class="pg-split">
+        <div class="pg-split__text pg-reveal">
+            <span class="pg-eyebrow">داستان ما</span>
+            <h2>از یک ایده‌ی ساده تا فروشگاهی که به آن اعتماد می‌کنی</h2>
+            <p>ModaStore با یک دغدغه شروع شد: خرید موبایل و لپ‌تاپ نباید پر از ابهام باشد. هر کالا با مشخصات دقیق، تنوع رنگ و حافظه‌ی مشخص، قیمت روز و موجودی واقعی نمایش داده می‌شود.</p>
+            <p>موجودی هر کالا لحظه‌ای به‌روز می‌شود و تا زمان پرداخت برای تو نگه داشته می‌شود. نظرات خریداران قبل از انتشار بررسی می‌شوند تا آنچه می‌خوانی قابل اعتماد باشد.</p>
+            <ul class="pg-checks">
+                <li><svg class="pg-i"><use href="#i-check"/></svg>اصالت و سلامت فیزیکی کالا</li>
+                <li><svg class="pg-i"><use href="#i-check"/></svg>قیمت نهایی بدون هزینه‌ی پنهان</li>
+                <li><svg class="pg-i"><use href="#i-check"/></svg>نظرات بررسی‌شده‌ی خریداران</li>
+            </ul>
+        </div>
+        <div class="pg-split__art pg-reveal" aria-hidden="true">
+            <div class="pg-orb pg-orb--a"></div><div class="pg-orb pg-orb--b"></div>
+            <div class="pg-card-float pg-card-float--1"><svg class="pg-i"><use href="#i-shield"/></svg><b>ضمانت اصالت</b><small>۱۰۰٪ اورجینال</small></div>
+            <div class="pg-card-float pg-card-float--2"><svg class="pg-i"><use href="#i-truck"/></svg><b>ارسال سریع</b><small>به سراسر کشور</small></div>
+            <div class="pg-card-float pg-card-float--3"><svg class="pg-i"><use href="#i-star"/></svg><b>۴٫۸ از ۵</b><small>امتیاز مشتریان</small></div>
+        </div>
+    </div>
+</section>
+
+<section class="pg-band">
+    <div class="container pg-section">
+        <div class="pg-head pg-reveal">
+            <span class="pg-eyebrow">چرا ModaStore</span>
+            <h2>چهار قولی که به آن پایبندیم</h2>
+        </div>
+        <div class="pg-grid pg-grid--4">
+            <article class="pg-card pg-reveal"><span class="pg-ico"><svg class="pg-i"><use href="#i-shield"/></svg></span><h3>اصالت کالا</h3><p>همه‌ی کالاها از نمایندگی‌ها و واردکنندگان رسمی تأمین می‌شوند و گارانتی معتبر دارند.</p></article>
+            <article class="pg-card pg-reveal"><span class="pg-ico"><svg class="pg-i"><use href="#i-truck"/></svg></span><h3>ارسال مطمئن</h3><p>بسته‌بندی ایمن و ارسال سریع با کد رهگیری. سفارش‌های بالای سقف تعیین‌شده، ارسال رایگان دارند.</p></article>
+            <article class="pg-card pg-reveal"><span class="pg-ico"><svg class="pg-i"><use href="#i-return"/></svg></span><h3>بازگشت آسان</h3><p>اگر کالا مطابق توضیحات نبود، طبق شرایط بازگشت کالا آن را پس بدهی.</p></article>
+            <article class="pg-card pg-reveal"><span class="pg-ico"><svg class="pg-i"><use href="#i-headset"/></svg></span><h3>پشتیبانی واقعی</h3><p>با انسان صحبت می‌کنی، نه ربات. پیام‌ها معمولاً در همان روز کاری پاسخ داده می‌شوند.</p></article>
+        </div>
+    </div>
+</section>
+
+<section class="container pg-section">
+    <div class="pg-head pg-reveal">
+        <span class="pg-eyebrow">مسیر ما</span>
+        <h2>قدم‌هایی که برداشتیم</h2>
+    </div>
+    <ol class="pg-timeline">
+        <li class="pg-reveal"><time>شروع</time><h3>راه‌اندازی فروشگاه</h3><p>اولین نسخه با دسته‌بندی موبایل و لوازم جانبی و پرداخت آنلاین.</p></li>
+        <li class="pg-reveal"><time>رشد</time><h3>گسترش دسته‌ها</h3><p>افزودن لپ‌تاپ، لوازم گیمینگ و هدفون با مشخصات فنی ساخت‌یافته.</p></li>
+        <li class="pg-reveal"><time>اعتماد</time><h3>نظرات تأییدشده</h3><p>سامانه‌ی نظرات با علامت «خریدار این کالا» و بررسی پیش از انتشار.</p></li>
+        <li class="pg-reveal"><time>امروز</time><h3>تجربه‌ی بدون دردسر</h3><p>سبد خرید هوشمند، رزرو موجودی و پیگیری لحظه‌ای سفارش.</p></li>
+    </ol>
+</section>
+
+{% include 'pages/partials/cta.html' with heading="آماده‌ی خرید بعدی‌ات هستی؟" text="جدیدترین محصولات را ببین یا اگر سوالی داری با ما در تماس باش." %}
+{% endblock %}

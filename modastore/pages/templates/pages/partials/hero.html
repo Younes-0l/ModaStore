@@ -1,0 +1,13 @@
+{# Shared header band for static pages. Usage: {% include 'pages/partials/hero.html' with title="..." lead="..." %} #}
+<section class="pg-hero">
+    <div class="container pg-hero__inner">
+        <nav class="pg-crumb" aria-label="مسیر صفحه">
+            <a href="{% url 'catalog:home' %}">خانه</a>
+            <span aria-hidden="true">/</span>
+            <span>{{ title }}</span>
+        </nav>
+        <h1>{{ title }}</h1>
+        {% if lead %}<p class="pg-hero__lead">{{ lead }}</p>{% endif %}
+        {% if updated %}<p class="pg-hero__meta"><svg class="pg-i"><use href="#i-clock"/></svg>آخرین بروزرسانی: {{ updated }}</p>{% endif %}
+    </div>
+</section>

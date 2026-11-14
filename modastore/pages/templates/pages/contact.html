@@ -1,0 +1,110 @@
+{% extends 'parent/base.html' %}
+{% load static %}
+
+{% block title %}تماس با ما | ModaStore{% endblock %}
+{% block body_class %}is-static-page{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'pages/css/pages.css' %}">{% endblock %}
+{% block extra_js %}<script src="{% static 'pages/js/pages.js' %}" defer></script>{% endblock %}
+
+{% block content %}
+{% include 'pages/partials/sprite.html' %}
+{% include 'pages/partials/hero.html' with title="تماس با ما" lead="سوال، پیشنهاد یا مشکلی داری؟ پیامت را بفرست؛ معمولاً در همان روز کاری جواب می‌دهیم." %}
+
+<section class="container pg-section pg-section--pull">
+    <div class="pg-contact">
+        <aside class="pg-contact__info">
+            <div class="pg-status {% if is_open %}is-open{% endif %}">
+                <span class="pg-dot"></span>
+                {% if is_open %}الان پاسخگو هستیم{% else %}الان خارج از ساعت کاری هستیم؛ پیامت را بگذار{% endif %}
+            </div>
+
+            <ul class="pg-info-list">
+                <li>
+                    <span class="pg-ico pg-ico--sm"><svg class="pg-i"><use href="#i-phone"/></svg></span>
+                    <div><small>تلفن پشتیبانی</small><a href="tel:+982112345678" dir="ltr">۰۲۱-۱۲۳۴۵۶۷۸</a></div>
+                </li>
+                <li>
+                    <span class="pg-ico pg-ico--sm"><svg class="pg-i"><use href="#i-mail"/></svg></span>
+                    <div><small>ایمیل</small><a href="mailto:info@modastore.ir" dir="ltr">info@modastore.ir</a></div>
+                </li>
+                <li>
+                    <span class="pg-ico pg-ico--sm"><svg class="pg-i"><use href="#i-pin"/></svg></span>
+                    <div><small>نشانی</small><span>تهران، خیابان ولیعصر، پلاک ۱۲۳</span></div>
+                </li>
+            </ul>
+
+            <div class="pg-hours">
+                <h3><svg class="pg-i"><use href="#i-clock"/></svg>ساعت پاسخگویی</h3>
+                <dl>
+                    <div><dt>شنبه تا چهارشنبه</dt><dd>۹ تا ۱۸</dd></div>
+                    <div><dt>پنجشنبه</dt><dd>۹ تا ۱۴</dd></div>
+                    <div><dt>جمعه</dt><dd class="is-off">تعطیل</dd></div>
+                </dl>
+            </div>
+
+            <a href="{% url 'pages:faq' %}" class="pg-link-card">
+                <span><b>جواب سوالت شاید همین حالا آماده باشد</b><small>سوالات متداول را ببین</small></span>
+                <svg class="pg-i"><use href="#i-arrow"/></svg>
+            </a>
+        </aside>
+
+        <div class="pg-form-card">
+            {% if sent %}
+            <div class="pg-success" role="status">
+                <span class="pg-success__icon"><svg class="pg-i"><use href="#i-check"/></svg></span>
+                <h2>پیامت ارسال شد</h2>
+                <p>ممنون که با ما در تماس بودی. پاسخ را از طریق تماس تلفنی یا پیامک به شماره‌ای که وارد کردی دریافت می‌کنی.</p>
+                <div class="pg-success__actions">
+                    <a href="{% url 'catalog:home' %}" class="pg-btn">بازگشت به فروشگاه</a>
+                    <a href="{% url 'pages:contact' %}" class="pg-btn pg-btn--outline">ارسال پیام دیگر</a>
+                </div>
+            </div>
+            {% else %}
+            <h2>پیام خود را بنویس</h2>
+            <p class="pg-muted">همه‌ی فیلدها لازم هستند.</p>
+
+            {% if limited %}<div class="pg-alert" role="alert"><svg class="pg-i"><use href="#i-alert"/></svg>تعداد پیام‌های ارسالی در این ساعت زیاد بوده است. لطفاً کمی بعد دوباره تلاش کن.</div>{% endif %}
+            {% if form.non_field_errors %}<div class="pg-alert" role="alert"><svg class="pg-i"><use href="#i-alert"/></svg>{{ form.non_field_errors.0 }}</div>{% endif %}
+
+            <form method="post" class="pg-form" novalidate data-contact-form>
+                {% csrf_token %}
+                <div class="pg-field-row">
+                    <div class="pg-field {% if form.name.errors %}has-error{% endif %}">
+                        <label for="{{ form.name.id_for_label }}">نام و نام خانوادگی</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}<p class="pg-error">{{ form.name.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div class="pg-field {% if form.phone.errors %}has-error{% endif %}">
+                        <label for="{{ form.phone.id_for_label }}">شماره موبایل</label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}<p class="pg-error">{{ form.phone.errors.0 }}</p>{% endif %}
+                    </div>
+                </div>
+
+                <fieldset class="pg-field pg-field--chips">
+                    <legend>موضوع پیام</legend>
+                    <div class="pg-chips">
+                        {% for radio in form.subject %}
+                        <label class="pg-chip">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>
+                        {% endfor %}
+                    </div>
+                </fieldset>
+
+                <div class="pg-field {% if form.message.errors %}has-error{% endif %}">
+                    <label for="{{ form.message.id_for_label }}">پیام</label>
+                    {{ form.message }}
+                    <div class="pg-field__foot">
+                        {% if form.message.errors %}<p class="pg-error">{{ form.message.errors.0 }}</p>{% else %}<span></span>{% endif %}
+                        <small class="pg-counter" data-counter dir="ltr">0 / 2000</small>
+                    </div>
+                </div>
+
+                <div class="pg-hp" aria-hidden="true">{{ form.website }}</div>
+
+                <button type="submit" class="pg-btn pg-btn--lg pg-btn--block"><svg class="pg-i"><use href="#i-send"/></svg>ارسال پیام</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

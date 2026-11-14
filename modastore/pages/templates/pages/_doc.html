@@ -1,0 +1,27 @@
+{% extends 'parent/base.html' %}
+{% load static %}
+{# Layout for long-form pages (terms, returns): sticky table of contents built from the h2 headings by pages.js #}
+
+{% block body_class %}is-static-page{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'pages/css/pages.css' %}">{% endblock %}
+{% block extra_js %}<script src="{% static 'pages/js/pages.js' %}" defer></script>{% endblock %}
+
+{% block content %}
+{% include 'pages/partials/sprite.html' %}
+{% include 'pages/partials/hero.html' with title=doc_title lead=doc_lead updated=doc_updated %}
+
+<section class="container pg-section pg-section--pull">
+    {% block doc_intro %}{% endblock %}
+    <div class="pg-doc">
+        <nav class="pg-toc" aria-label="فهرست مطالب" data-toc>
+            <p class="pg-toc__title">در این صفحه</p>
+            <ol data-toc-list></ol>
+        </nav>
+        <article class="pg-prose" data-prose>
+            {% block doc_body %}{% endblock %}
+        </article>
+    </div>
+</section>
+
+{% include 'pages/partials/cta.html' %}
+{% endblock %}

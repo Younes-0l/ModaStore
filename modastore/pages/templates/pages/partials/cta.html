@@ -1,0 +1,12 @@
+<section class="container pg-section">
+    <div class="pg-cta pg-reveal">
+        <div>
+            <h2>{{ heading|default:"هنوز سوالی داری؟" }}</h2>
+            <p>{{ text|default:"تیم پشتیبانی ما هر روز هفته، به‌جز جمعه‌ها، پاسخگوی توست." }}</p>
+        </div>
+        <div class="pg-cta__actions">
+            <a href="{% url 'pages:contact' %}" class="pg-btn pg-btn--light"><svg class="pg-i"><use href="#i-message"/></svg>تماس با ما</a>
+            <a href="{% url 'pages:faq' %}" class="pg-btn pg-btn--ghost">سوالات متداول</a>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,95 @@
+{% extends 'parent/base.html' %}
+{% load static %}
+
+{% block title %}سوالات متداول | ModaStore{% endblock %}
+{% block body_class %}is-static-page{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'pages/css/pages.css' %}">{% endblock %}
+{% block extra_js %}<script src="{% static 'pages/js/pages.js' %}" defer></script>{% endblock %}
+
+{% block content %}
+{% include 'pages/partials/sprite.html' %}
+{% include 'pages/partials/hero.html' with title="سوالات متداول" lead="پاسخ رایج‌ترین پرسش‌ها درباره‌ی خرید، پرداخت، ارسال و بازگشت کالا." %}
+
+<section class="container pg-section pg-section--pull">
+    <div class="pg-faq-tools">
+        <label class="pg-search">
+            <svg class="pg-i"><use href="#i-search"/></svg>
+            <input type="search" placeholder="سوالت را جست‌وجو کن، مثلاً «ارسال»" data-faq-search aria-label="جست‌وجو در سوالات">
+        </label>
+        <div class="pg-tabs" role="tablist" aria-label="دسته‌بندی سوالات" data-faq-tabs>
+            <button type="button" class="is-active" data-filter="all">همه</button>
+            <button type="button" data-filter="order">سفارش و پرداخت</button>
+            <button type="button" data-filter="shipping">ارسال</button>
+            <button type="button" data-filter="return">بازگشت و ضمانت</button>
+            <button type="button" data-filter="account">حساب کاربری</button>
+        </div>
+    </div>
+
+    <div class="pg-faq-list" data-faq-list>
+        <details class="pg-faq" data-cat="order">
+            <summary>چطور سفارش ثبت کنم؟<svg class="pg-i"><use href="#i-chevron"/></svg></summary>
+            <div class="pg-faq__body">کالا را به سبد خرید اضافه کن، مرحله‌ی «اطلاعات ارسال» را کامل کن، سفارش را بررسی و ثبت کن و در پایان پرداخت را انجام بده. برای ثبت سفارش باید با شماره‌ی موبایل وارد شده باشی؛ سبد خریدی که قبل از ورود پر کرده‌ای حفظ می‌شود.</div>
+        </details>
+        <details class="pg-faq" data-cat="order">
+            <summary>چه مدت فرصت پرداخت دارم؟<svg class="pg-i"><use href="#i-chevron"/></svg></summary>
+            <div class="pg-faq__body">بعد از ثبت سفارش، موجودی کالا ۳۰ دقیقه برایت نگه داشته می‌شود. اگر در این مدت پرداخت نکنی، سفارش خودکار لغو و موجودی آزاد می‌شود. اگر پول از حساب کسر شده و سفارش لغو شده بود، در صورت وجود موجودی سفارش فعال می‌شود، وگرنه مبلغ برگردانده می‌شود.</div>
+        </details>
+        <details class="pg-faq" data-cat="order">
+            <summary>پرداخت انجام شد ولی سفارش تأیید نشد، چه کنم؟<svg class="pg-i"><use href="#i-chevron"/></svg></summary>
+            <div class="pg-faq__body">نگران نباش. وضعیت سفارش را در بخش «سفارش‌های من» ببین. اگر مبلغ کسر شده ولی سفارش در انتظار پرداخت است، چند دقیقه صبر کن و دوباره بررسی کن. اگر مشکل ادامه داشت، شماره‌ی سفارش را از طریق صفحه‌ی تماس برایمان بفرست. مبلغ‌های کسرشده‌ی تأییدنشده پس از بررسی به حسابت برمی‌گردد.</div>
+        </details>
+        <details class="pg-faq" data-cat="order">
+            <summary>آیا قیمت‌ها نهایی هستند؟<svg class="pg-i"><use href="#i-chevron"/></svg></summary>
+            <div class="pg-faq__body">بله. قیمت‌ها به تومان و شامل مالیات هستند. تنها هزینه‌ی دیگر، هزینه‌ی ارسال است که پیش از پرداخت در مرحله‌ی بررسی سفارش دیده می‌شود.</div>
+        </details>
+
+        <details class="pg-faq" data-cat="shipping">
+            <summary>هزینه و زمان ارسال چقدر است؟<svg class="pg-i"><use href="#i-chevron"/></svg></summary>
+            <div class="pg-faq__body">هزینه‌ی ارسال مبلغ ثابتی است که در مرحله‌ی بررسی سفارش می‌بینی. سفارش‌های بالاتر از سقف ارسال رایگان هزینه‌ای ندارند. ارسال به تهران معمولاً ۱ تا ۲ روز کاری و به سایر شهرها ۲ تا ۵ روز کاری طول می‌کشد.</div>
+        </details>
+        <details class="pg-faq" data-cat="shipping">
+            <summary>سفارشم را چطور پیگیری کنم؟<svg class="pg-i"><use href="#i-chevron"/></svg></summary>
+            <div class="pg-faq__body">از منوی حساب کاربری وارد «سفارش‌های من» شو. وضعیت هر سفارش (در انتظار پرداخت، در حال پردازش، ارسال‌شده و تحویل‌شده) همان‌جا نمایش داده می‌شود.</div>
+        </details>
+        <details class="pg-faq" data-cat="shipping">
+            <summary>آدرس را بعد از ثبت سفارش می‌توانم تغییر بدهم؟<svg class="pg-i"><use href="#i-chevron"/></svg></summary>
+            <div class="pg-faq__body">آدرس هر سفارش در لحظه‌ی ثبت ذخیره می‌شود و با ویرایش آدرس‌های حسابت تغییر نمی‌کند. اگر نیاز به اصلاح داری، قبل از ارسال از طریق صفحه‌ی تماس به ما اطلاع بده.</div>
+        </details>
+
+        <details class="pg-faq" data-cat="return">
+            <summary>کالا اصل است؟ گارانتی دارد؟<svg class="pg-i"><use href="#i-chevron"/></svg></summary>
+            <div class="pg-faq__body">بله. همه‌ی کالاها از منابع رسمی تأمین می‌شوند و مشخصات گارانتی هر کالا در صفحه‌ی همان محصول نوشته شده است.</div>
+        </details>
+        <details class="pg-faq" data-cat="return">
+            <summary>چطور کالا را بازگردانم؟<svg class="pg-i"><use href="#i-chevron"/></svg></summary>
+            <div class="pg-faq__body">تا ۷ روز پس از تحویل، اگر کالا استفاده نشده و در بسته‌بندی اصلی باشد، می‌توانی درخواست بازگشت بدهی. جزئیات کامل در صفحه‌ی <a href="{% url 'pages:returns' %}">شرایط بازگشت کالا</a> آمده است.</div>
+        </details>
+        <details class="pg-faq" data-cat="return">
+            <summary>بازگشت وجه چقدر طول می‌کشد؟<svg class="pg-i"><use href="#i-chevron"/></svg></summary>
+            <div class="pg-faq__body">پس از تأیید کالای بازگشتی، مبلغ معمولاً ظرف ۳ تا ۷ روز کاری به همان حسابی که پرداخت کرده‌ای واریز می‌شود.</div>
+        </details>
+
+        <details class="pg-faq" data-cat="account">
+            <summary>چرا رمز عبور ندارم؟<svg class="pg-i"><use href="#i-chevron"/></svg></summary>
+            <div class="pg-faq__body">ورود و ثبت‌نام فقط با شماره‌ی موبایل و کد یک‌بارمصرف انجام می‌شود. رمزی برای یادآوری یا لو رفتن وجود ندارد.</div>
+        </details>
+        <details class="pg-faq" data-cat="account">
+            <summary>کد تأیید به دستم نرسید<svg class="pg-i"><use href="#i-chevron"/></svg></summary>
+            <div class="pg-faq__body">شماره را بررسی کن و پس از پایان شمارش معکوس روی «ارسال دوباره» بزن. در هر ساعت تعداد محدودی کد می‌توانی بگیری. اگر مشکل ادامه داشت از صفحه‌ی تماس به ما خبر بده.</div>
+        </details>
+        <details class="pg-faq" data-cat="account">
+            <summary>چطور آدرس‌هایم را مدیریت کنم؟<svg class="pg-i"><use href="#i-chevron"/></svg></summary>
+            <div class="pg-faq__body">در صفحه‌ی «پروفایل» می‌توانی آدرس اضافه، ویرایش یا حذف کنی و یکی را به‌عنوان پیش‌فرض تعیین کنی.</div>
+        </details>
+
+        <div class="pg-empty" data-faq-empty hidden>
+            <svg class="pg-i"><use href="#i-search"/></svg>
+            <h3>سوالی با این عبارت پیدا نشد</h3>
+            <p>عبارت دیگری را امتحان کن یا مستقیم از ما بپرس.</p>
+            <a href="{% url 'pages:contact' %}" class="pg-btn">ارسال پیام</a>
+        </div>
+    </div>
+</section>
+
+{% include 'pages/partials/cta.html' with heading="جوابت را پیدا نکردی؟" %}
+{% endblock %}

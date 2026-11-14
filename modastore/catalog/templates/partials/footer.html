@@ -8,20 +8,19 @@
         <div>
             <h3>دسترسی سریع</h3>
             <ul>
-                <li><a href="#">محصولات</a></li>
-                <li><a href="#">مجله</a></li>
-                <li><a href="#">درباره ما</a></li>
-                <li><a href="#">تماس با ما</a></li>
+                <li><a href="{% url 'catalog:product_list' %}">محصولات</a></li>
+                <li><a href="{% url 'pages:about' %}">درباره ما</a></li>
+                <li><a href="{% url 'pages:contact' %}">تماس با ما</a></li>
             </ul>
         </div>
 
         <div>
             <h3>خدمات مشتریان</h3>
             <ul>
-                <li><a href="#">پیگیری سفارش</a></li>
-                <li><a href="#">قوانین و مقررات</a></li>
-                <li><a href="#">شرایط بازگشت کالا</a></li>
-                <li><a href="#">سوالات متداول</a></li>
+                <li><a href="{% url 'orders:list' %}">پیگیری سفارش</a></li>
+                <li><a href="{% url 'pages:terms' %}">قوانین و مقررات</a></li>
+                <li><a href="{% url 'pages:returns' %}">شرایط بازگشت کالا</a></li>
+                <li><a href="{% url 'pages:faq' %}">سوالات متداول</a></li>
             </ul>
         </div>
 

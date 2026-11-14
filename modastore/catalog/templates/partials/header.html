@@ -12,9 +12,9 @@
         <nav class="main-nav" aria-label="منوی اصلی">
             <a href="{% url 'catalog:home' %}">خانه</a>
             <a href="{% url 'catalog:product_list' %}">محصولات</a>
-            <a href="#">مجله</a>
-            <a href="#">درباره ما</a>
-            <a href="#">تماس با ما</a>
+            <a href="{% url 'orders:list' %}">سفارش ها</a>
+            <a href="{% url 'pages:about' %}">درباره ما</a>
+            <a href="{% url 'pages:contact' %}">تماس با ما</a>
         </nav>
 
         <form class="search-form search-form--desktop" action="{% url 'catalog:product_list' %}" method="get" role="search">
@@ -65,10 +65,10 @@
     <nav class="mobile-menu__nav" aria-label="منوی موبایل">
         <a href="{% url 'catalog:home' %}">خانه</a>
         <a href="{% url 'catalog:product_list' %}">محصولات</a>
-        <a href="#">مجله</a>
+        <a href="{% url 'orders:list' %}">سفارشات</a>
         <a href="{% url 'wishlist:list' %}">علاقه‌مندی‌ها</a>
-        <a href="#">درباره ما</a>
-        <a href="#">تماس با ما</a>
+        <a href="{% url 'pages:about' %}">درباره ما</a>
+        <a href="{% url 'pages:contact' %}">تماس با ما</a>
         <a href="{% url 'cart:detail' %}">سبد خرید</a>
         <a href="{% if user.is_authenticated %}{% url 'accounts:profile' %}{% else %}{% url 'accounts:login' %}{% endif %}">{% if user.is_authenticated %}حساب کاربری{% else %}ورود / ثبت‌نام{% endif %}</a>
     </nav>

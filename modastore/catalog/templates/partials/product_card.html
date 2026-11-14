@@ -1,43 +1,50 @@
 {% load price_tags %}
 
-{% with variant=product.variants.all.0 image=product.main_images.0 %}
-<article class="product-card">
+{% with variant=product.variants.all.0 image=product.main_images.0 image2=product.main_images.1 %}
+<article class="product-card{% if not variant.in_stock %} is-soldout{% endif %}">
     <div class="product-card__media">
         <a href="{% url 'catalog:product_detail' product.slug %}" class="product-card__image" aria-label="{{ product.name }}">
             {% if image %}
-            <img src="{{ image.image.url }}" alt="{{ image.alt|default:product.name }}" loading="lazy">
+            <img class="product-card__img" src="{{ image.image.url }}" alt="{{ image.alt|default:product.name }}" loading="lazy">
+            {% if image2 %}<img class="product-card__img2" src="{{ image2.image.url }}" alt="" loading="lazy" aria-hidden="true">{% endif %}
             {% else %}
             <div class="product-card__placeholder">بدون تصویر</div>
             {% endif %}
 
-            <button type="button"
-                    class="wish-btn {% if product.id in wishlist_ids %}is-active{% endif %}"
-                    data-wishlist data-product-id="{{ product.id }}"
-                    aria-pressed="{% if product.id in wishlist_ids %}true{% else %}false{% endif %}"
-                    aria-label="{% if product.id in wishlist_ids %}حذف از علاقه‌مندی‌ها{% else %}افزودن به علاقه‌مندی‌ها{% endif %}">
-                <span class="wish-ico">{% icon 'heart' 'wish-off' %}{% icon 'heart-fill' 'wish-on' %}</span>
-            </button>
-
-            {% if variant.discount_percent %}
-            <span class="badge">{{ variant.discount_percent }}٪</span>
-            {% endif %}
+            <span class="pc-badges">
+                {% if variant.discount_percent %}<span class="pc-badge pc-badge--sale">{{ variant.discount_percent|fa_digits }}٪ تخفیف</span>{% endif %}
+                {% if variant.in_stock and variant.stock <= 3 %}<span class="pc-badge pc-badge--low">فقط {{ variant.stock|fa_digits }} عدد</span>{% endif %}
+            </span>
+            {% if not variant.in_stock %}<span class="pc-soldout">ناموجود</span>{% endif %}
         </a>
+
+        <button type="button"
+                class="wish-btn {% if product.id in wishlist_ids %}is-active{% endif %}"
+                data-wishlist data-product-id="{{ product.id }}"
+                aria-pressed="{% if product.id in wishlist_ids %}true{% else %}false{% endif %}"
+                aria-label="{% if product.id in wishlist_ids %}حذف از علاقه‌مندی‌ها{% else %}افزودن به علاقه‌مندی‌ها{% endif %}">
+            <span class="wish-ico">{% icon 'heart' 'wish-off' %}{% icon 'heart-fill' 'wish-on' %}</span>
+        </button>
+
         {% if variant.in_stock %}
         <button type="button" class="product-card__add" data-add-variant="{{ variant.id }}" aria-label="افزودن به سبد خرید">
             {% icon 'cart-plus' %}
         </button>
         {% endif %}
     </div>
+
     <div class="product-card__body">
-        <span class="muted">{{ product.brand.name }}</span>
+        <div class="pc-meta">
+            <span class="pc-brand">{{ product.brand.name }}</span>
+            {% if product.rating_count %}
+            <span class="card-rating">{% icon 'star-fill' %}<strong>{{ product.rating_avg|rating_text }}</strong><span>({{ product.rating_count|fa_digits }})</span></span>
+            {% endif %}
+        </div>
         <h3><a href="{% url 'catalog:product_detail' product.slug %}">{{ product.name }}</a></h3>
-
-        {% if product.rating_count %}
-        <div class="card-rating">{% icon 'star-fill' %}<strong>{{ product.rating_avg|rating_text }}</strong><span>({{ product.rating_count|fa_digits }})</span></div>
-        {% endif %}
-
         <div class="product-card__price">
-            {% if variant.old_price %}<del>{{ variant.old_price|price_format }}</del>{% endif %}
+            {% if variant.discount_percent %}
+            <div class="pc-price__top"><del>{{ variant.old_price|price_format }}</del><span class="pc-off">{{ variant.discount_percent|fa_digits }}٪</span></div>
+            {% endif %}
             <strong>{{ variant.price|price_format }} <small>تومان</small></strong>
         </div>
     </div>

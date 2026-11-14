@@ -6,6 +6,7 @@ from django.views.generic import ListView, DetailView, TemplateView
 from .models import Attribute, Brand, Category, Product, ProductImage, ProductVariant
 import json, re
 from reviews.services import services as review_services
+from reviews.models import Review
 
 
 _DIGITS = str.maketrans('۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩', '01234567890123456789')
@@ -47,6 +48,17 @@ class HomeView(TemplateView):
             .distinct().order_by('-updated_at')
         )[:8]
         ctx['brands'] = Brand.objects.filter(is_active=True).exclude(logo='')[:8]
+        ctx['offer_products'] = list(ctx['offer_products'])
+        ctx['new_products'] = list(ctx['new_products'])
+        ctx['top_rated'] = list(self._with_card_data(
+            purchasable.filter(rating_count__gt=0).distinct().order_by('-rating_avg', '-rating_count')
+        )[:8])
+        ctx['max_discount'] = max(
+            (v.discount_percent for p in ctx['offer_products'] for v in p.variants.all()), default=0,
+        )
+        ctx['reviews'] = Review.objects.filter(
+            status='approved', rating__gte=4,
+        ).exclude(body='').select_related('product', 'user').order_by('-created_at')[:3]
         return ctx
 
 

@@ -30,6 +30,7 @@ urlpatterns = [
     path('wishlist/', include('wishlist.urls')),
     path('reviews/', include('reviews.urls')),
     path('api/', include('api.urls')),
+    path('', include('pages.urls')),
 
     path('torob_api/v3/products', torob.products_v3, name='torob_products'),
 ]

@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.core.paginator import Paginator
-from django.db.models import Count, Max, Min, Prefetch, Q
+from django.db.models import Count, Max, Min, Prefetch, Q, F
 from django.shortcuts import get_object_or_404
 from django.views.generic import ListView, DetailView, TemplateView
 from .models import Attribute, Brand, Category, Product, ProductImage, ProductVariant
@@ -133,6 +133,15 @@ class ProductListView(ListView):
         if params.get('in_stock') == '1':
             qs = qs.filter(variants__stock__gt=0, variants__is_active=True)
 
+        # Only discounted items (the same variant must be active and discounted)
+        if params.get('on_sale') == '1':
+            qs = qs.filter(variants__is_active=True, variants__old_price__gt=F('variants__price'))
+
+        # Minimum rating (1-5)
+        min_rating = self._to_int(params.get('min_rating'))
+        if min_rating:
+            qs = qs.filter(rating_avg__gte=min(min_rating, 5))
+
         # Dynamic attribute filters: attr_<attribute-slug>=<value-id>
         for key in params:
             if key.startswith('attr_'):
@@ -213,6 +222,69 @@ class ProductListView(ListView):
         sort_query.pop('page', None)
         sort_query.pop('sort', None)
         ctx['sort_query_string'] = sort_query.urlencode()
+
+        ctx['on_sale'] = params.get('on_sale') == '1'
+        rating = self._to_int(params.get('min_rating'))
+        ctx['min_rating'] = str(min(rating, 5)) if rating else ''
+        ctx['rating_options'] = [('', 'همه'), ('4', '۴ و بالاتر'), ('3', '۳ و بالاتر')]
+
+        # ---- Active filter chips: every chip links to the same page without that one filter
+        path = self.request.path
+
+        def url_without(*keys, value=None):
+            q = params.copy()
+            q.pop('page', None)
+            for key in keys:
+                if value is None:
+                    q.pop(key, None)
+                else:
+                    q.setlist(key, [v for v in q.getlist(key) if v != value])
+            qs = q.urlencode()
+            return f'{path}?{qs}' if qs else path
+
+        chips = []
+        if ctx['q'].strip():
+            chips.append({'label': f"جست‌وجو: {ctx['q'].strip()}", 'remove_url': url_without('q')})
+        brand_names = {b.slug: b.name for b in ctx['brands']}
+        for slug in ctx['selected_brands']:
+            chips.append({'label': brand_names.get(slug, slug), 'remove_url': url_without('brand', value=slug)})
+        if ctx['price_active']:
+            chips.append({
+                'label': 'قیمت', 'is_price': True,
+                'price_min': ctx['price_min'], 'price_max': ctx['price_max'],
+                'remove_url': url_without('price_min', 'price_max'),
+            })
+        for attr in ctx['filter_attributes']:
+            for val in attr.values.all():
+                if val.id in selected_attr_ids:
+                    chips.append({
+                        'label': f'{attr.name}: {val.value}',
+                        'remove_url': url_without(f'attr_{attr.id}', value=str(val.id)),
+                    })
+        if ctx['in_stock']:
+            chips.append({'label': 'فقط موجودها', 'remove_url': url_without('in_stock')})
+        if ctx['on_sale']:
+            chips.append({'label': 'تخفیف‌دار', 'remove_url': url_without('on_sale')})
+        if ctx['min_rating']:
+            chips.append({'label': f"امتیاز {ctx['min_rating']} به بالا", 'remove_url': url_without('min_rating')})
+        ctx['active_filters'] = chips
+        ctx['filters_count'] = len([c for c in chips if not c['label'].startswith('جست‌وجو')])
+
+        # "Remove all" keeps the category (it is in the path) and the search/sort only
+        keep = params.copy()
+        for key in list(keep.keys()):
+            if key not in ('q', 'sort'):
+                keep.pop(key)
+        qs = keep.urlencode()
+        ctx['reset_url'] = f'{path}?{qs}' if qs else path
+
+        # ---- Numbered pagination with "..." gaps
+        page_obj = ctx.get('page_obj')
+        if page_obj:
+            ctx['page_numbers'] = [
+                {'n': n, 'gap': n == Paginator.ELLIPSIS}
+                for n in ctx['paginator'].get_elided_page_range(page_obj.number, on_each_side=1, on_ends=1)
+            ]
         return ctx
 
 

@@ -8,6 +8,8 @@ from django.views.decorators.http import require_POST
 from .services import services, addresses
 from .forms import AddressForm, OTPForm, PhoneForm, ProfileForm
 from .models import Address
+from django.db.models import Q
+from orders.models import Order
 
 
 SESSION_PHONE_KEY = 'otp_phone'
@@ -100,16 +102,25 @@ def logout_view(request):
 
 @login_required
 def profile_view(request):
-    form = ProfileForm(request.POST or None, instance=request.user)
+    user = request.user
+    form = ProfileForm(request.POST or None, instance=user)
     if request.method == 'POST' and form.is_valid():
         form.save()
         messages.success(request, 'اطلاعات شما ذخیره شد.')
         return redirect('accounts:profile')
+
+    addresses = list(user.addresses.all())
+    orders = Order.objects.filter(user=user)
+    steps = [bool(user.first_name), bool(user.last_name), bool(addresses)]
     return render(request, 'accounts/profile.html', {
         'form': form,
-        'addresses': request.user.addresses.all(),
+        'addresses': addresses,
+        'recent_orders': orders.order_by('-created_at')[:3],
+        'orders_count': orders.count(),
+        'active_orders_count': orders.filter(status__in=['pending', 'processing', 'shipped']).count(),
+        'wishlist_count': user.wishlist_items.count(),   # <- adjust to your wishlist related_name
+        'completion': round(100 * sum(steps) / len(steps)),
     })
-
 
 @login_required
 def address_create(request):

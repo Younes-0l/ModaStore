@@ -1,62 +1,179 @@
 {% extends 'parent/base.html' %}
-{% load static %}
+{% load static profile_tags %}
+
 
 {% block title %}حساب کاربری | ModaStore{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/auth.css' %}">{% endblock %}
 
 {% block content %}
-<div class="container profile-page">
-    <h1>حساب کاربری</h1>
-    <p class="muted" dir="ltr" style="text-align: right;">{{ user.phone_number }}</p>
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+        <symbol id="pf-bag" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></symbol>
+        <symbol id="pf-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+        <symbol id="pf-heart" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></symbol>
+        <symbol id="pf-pin" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></symbol>
+        <symbol id="pf-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+        <symbol id="pf-edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
+        <symbol id="pf-trash" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></symbol>
+        <symbol id="pf-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+        <symbol id="pf-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></symbol>
+        <symbol id="pf-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
+        <symbol id="pf-chat" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+        <symbol id="pf-arrow" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></symbol>
+        <symbol id="pf-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+        <symbol id="pf-phone" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></symbol>
+    </defs>
+</svg>
 
-    <div class="profile-grid">
-        <section class="auth-card">
-            <h2>اطلاعات شخصی</h2>
-            <form method="post" novalidate>
-                {% csrf_token %}
-                {% for field in form %}
-                <label class="field">
-                    <span>{{ field.label }}</span>
-                    {{ field }}
-                    {% if field.errors %}<small class="field-error">{{ field.errors.0 }}</small>{% endif %}
-                </label>
-                {% endfor %}
-                <button type="submit" class="btn btn--block">ذخیره</button>
-            </form>
-        </section>
-
-        <section class="auth-card">
-            <div class="card-head">
-                <h2>آدرس‌ها</h2>
-                <a href="{% url 'accounts:address_add' %}" class="btn btn--outline btn--sm">افزودن آدرس</a>
+<!-- Header band -->
+<section class="pf-hero">
+    <div class="container pf-hero__inner">
+        <div class="pf-id">
+            <span class="pf-avatar" aria-hidden="true">{% if user.first_name %}{{ user.first_name|slice:":1" }}{% else %}<svg class="pf-i"><use href="#pf-user"/></svg>{% endif %}</span>
+            <div>
+                <h1>{% if user.first_name or user.last_name %}{{ user.first_name }} {{ user.last_name }}{% else %}کاربر ModaStore{% endif %}</h1>
+                <p class="pf-id__meta">
+                    <span dir="ltr"><svg class="pf-i pf-i--sm"><use href="#pf-phone"/></svg>{{ user.phone_number }}</span>
+                    <span><svg class="pf-i pf-i--sm"><use href="#pf-clock"/></svg>عضو از {{ user.date_joined|jdate }}</span>
+                </p>
             </div>
-            {% for address in addresses %}
-            <article class="address-item">
-                <div>
-                    <strong>{{ address.title }}</strong>
-                    {% if address.is_default %}<span class="tag">پیش‌فرض</span>{% endif %}
-                    <p>{{ address.province }}، {{ address.city }}، {{ address.full_address }}</p>
-                    <p class="muted">{{ address.receiver_name }} - کد پستی {{ address.postal_code }}</p>
-                </div>
-                <div class="address-actions">
-                    <a href="{% url 'accounts:address_edit' address.pk %}">ویرایش</a>
-                    <form method="post" action="{% url 'accounts:address_delete' address.pk %}"
-                          onsubmit="return confirm('این آدرس حذف شود؟');">
-                        {% csrf_token %}
-                        <button type="submit" class="link-btn link-btn--danger">حذف</button>
-                    </form>
-                </div>
-            </article>
-            {% empty %}
-            <p class="muted">هنوز آدرسی ثبت نکرده‌اید.</p>
-            {% endfor %}
-        </section>
+        </div>
+        <form method="post" action="{% url 'accounts:logout' %}" class="pf-logout">
+            {% csrf_token %}
+            <button type="submit" class="pf-btn pf-btn--glass"><svg class="pf-i"><use href="#pf-logout"/></svg>خروج</button>
+        </form>
     </div>
+</section>
 
-    <form method="post" action="{% url 'accounts:logout' %}" class="logout-form">
-        {% csrf_token %}
-        <button type="submit" class="btn btn--outline">خروج از حساب</button>
-        <a href="{% url 'orders:list' %}" class="btn btn--outline">سفارش‌های من</a>
-    </form>
+<div class="container pf-page">
+    <!-- Stats -->
+    <ul class="pf-stats">
+        <li><a href="{% url 'orders:list' %}"><span class="pf-ico"><svg class="pf-i"><use href="#pf-bag"/></svg></span><strong>{{ orders_count|fa_digits }}</strong><small>سفارش</small></a></li>
+        <li><a href="{% url 'orders:list' %}"><span class="pf-ico pf-ico--amber"><svg class="pf-i"><use href="#pf-clock"/></svg></span><strong>{{ active_orders_count|fa_digits }}</strong><small>در جریان</small></a></li>
+        <li><a href="{% url 'wishlist:list' %}"><span class="pf-ico pf-ico--rose"><svg class="pf-i"><use href="#pf-heart"/></svg></span><strong>{{ wishlist_count|fa_digits }}</strong><small>علاقه‌مندی</small></a></li>
+        <li><a href="#addresses"><span class="pf-ico pf-ico--teal"><svg class="pf-i"><use href="#pf-pin"/></svg></span><strong>{{ addresses|length|fa_digits }}</strong><small>آدرس</small></a></li>
+    </ul>
+
+    <div class="pf-grid">
+        <div class="pf-col">
+            <!-- Personal info -->
+            <section class="pf-card" aria-labelledby="pf-info">
+                <header class="pf-card__head">
+                    <h2 id="pf-info">اطلاعات شخصی</h2>
+                    {% if completion < 100 %}<span class="pf-pill">{{ completion|fa_digits }}٪ کامل</span>{% else %}<span class="pf-pill pf-pill--ok"><svg class="pf-i pf-i--sm"><use href="#pf-check"/></svg>کامل</span>{% endif %}
+                </header>
+                {% if completion < 100 %}
+                <div class="pf-progress" role="progressbar" aria-valuenow="{{ completion }}" aria-valuemin="0" aria-valuemax="100" aria-label="تکمیل پروفایل"><span style="width: {{ completion }}%"></span></div>
+                <p class="pf-hint">با تکمیل نام و آدرس، ثبت سفارش سریع‌تر می‌شود.</p>
+                {% endif %}
+
+                <form method="post" novalidate class="pf-form">
+                    {% csrf_token %}
+                    <div class="pf-row">
+                        {% for field in form %}
+                        {% if field.name != 'email' %}
+                        <div class="pf-field {% if field.errors %}has-error{% endif %}">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}<small class="pf-error">{{ field.errors.0 }}</small>{% endif %}
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% for field in form %}{% if field.name == 'email' %}
+                    <div class="pf-field {% if field.errors %}has-error{% endif %}">
+                        <label for="{{ field.id_for_label }}">{{ field.label }} <em>(اختیاری)</em></label>
+                        {{ field }}
+                        {% if field.errors %}<small class="pf-error">{{ field.errors.0 }}</small>{% endif %}
+                    </div>
+                    {% endif %}{% endfor %}
+                    <div class="pf-field pf-field--static">
+                        <label>شماره موبایل</label>
+                        <div class="pf-static" dir="ltr"><svg class="pf-i pf-i--sm"><use href="#pf-phone"/></svg>{{ user.phone_number }}<small>غیرقابل تغییر</small></div>
+                    </div>
+                    <button type="submit" class="pf-btn pf-btn--lg">ذخیره‌ی تغییرات</button>
+                </form>
+            </section>
+
+            <!-- Addresses -->
+            <section class="pf-card" id="addresses" aria-labelledby="pf-addr">
+                <header class="pf-card__head">
+                    <h2 id="pf-addr">آدرس‌های من</h2>
+                    <a href="{% url 'accounts:address_add' %}" class="pf-btn pf-btn--outline pf-btn--sm"><svg class="pf-i"><use href="#pf-plus"/></svg>آدرس جدید</a>
+                </header>
+                {% for address in addresses %}
+                <article class="pf-address{% if address.is_default %} is-default{% endif %}">
+                    <span class="pf-ico pf-ico--sm pf-ico--teal"><svg class="pf-i"><use href="#pf-pin"/></svg></span>
+                    <div class="pf-address__body">
+                        <div class="pf-address__title"><strong>{{ address.title }}</strong>{% if address.is_default %}<span class="pf-tag">پیش‌فرض</span>{% endif %}</div>
+                        <p>{{ address.province }}، {{ address.city }}، {{ address.full_address }}</p>
+                        <p class="pf-muted">{{ address.receiver_name }} · کد پستی {{ address.postal_code|fa_digits }}</p>
+                    </div>
+                    <div class="pf-address__actions">
+                        <a href="{% url 'accounts:address_edit' address.pk %}" class="pf-icon-btn" aria-label="ویرایش آدرس {{ address.title }}"><svg class="pf-i"><use href="#pf-edit"/></svg></a>
+                        <form method="post" action="{% url 'accounts:address_delete' address.pk %}" data-confirm="آدرس «{{ address.title }}» حذف شود؟">
+                            {% csrf_token %}
+                            <button type="submit" class="pf-icon-btn pf-icon-btn--danger" aria-label="حذف آدرس {{ address.title }}"><svg class="pf-i"><use href="#pf-trash"/></svg></button>
+                        </form>
+                    </div>
+                </article>
+                {% empty %}
+                <div class="pf-empty">
+                    <span class="pf-ico pf-ico--teal"><svg class="pf-i"><use href="#pf-pin"/></svg></span>
+                    <p>هنوز آدرسی ثبت نکرده‌ای. با ثبت آدرس، در خرید بعدی بدون تایپ دوباره آن را انتخاب می‌کنی.</p>
+                    <a href="{% url 'accounts:address_add' %}" class="pf-btn">افزودن اولین آدرس</a>
+                </div>
+                {% endfor %}
+            </section>
+        </div>
+
+        <aside class="pf-col">
+            <!-- Recent orders -->
+            <section class="pf-card" aria-labelledby="pf-orders">
+                <header class="pf-card__head">
+                    <h2 id="pf-orders">آخرین سفارش‌ها</h2>
+                    {% if orders_count %}<a href="{% url 'orders:list' %}" class="pf-more">همه<svg class="pf-i pf-i--sm"><use href="#pf-arrow"/></svg></a>{% endif %}
+                </header>
+                {% for order in recent_orders %}
+                <a class="pf-order" href="{% url 'orders:detail' order.number %}">
+                    <div>
+                        <strong dir="ltr">{{ order.number }}</strong>
+                        <small>{{ order.created_at|jdate }}</small>
+                    </div>
+                    <div class="pf-order__end">
+                        <span class="pf-status pf-status--{{ order.status }}">{{ order.get_status_display }}</span>
+                        <b>{{ order.total|price }} <small>تومان</small></b>
+                    </div>
+                </a>
+                {% empty %}
+                <div class="pf-empty pf-empty--sm">
+                    <p>هنوز سفارشی ثبت نکرده‌ای.</p>
+                    <a href="{% url 'catalog:product_list' %}" class="pf-btn pf-btn--outline pf-btn--sm">شروع خرید</a>
+                </div>
+                {% endfor %}
+            </section>
+
+            <!-- Quick links -->
+            <section class="pf-card pf-card--links" aria-label="دسترسی سریع">
+                <a href="{% url 'wishlist:list' %}"><span class="pf-ico pf-ico--sm pf-ico--rose"><svg class="pf-i"><use href="#pf-heart"/></svg></span>علاقه‌مندی‌ها<svg class="pf-i pf-i--sm pf-go"><use href="#pf-arrow"/></svg></a>
+                <a href="{% url 'orders:list' %}"><span class="pf-ico pf-ico--sm"><svg class="pf-i"><use href="#pf-bag"/></svg></span>پیگیری سفارش‌ها<svg class="pf-i pf-i--sm pf-go"><use href="#pf-arrow"/></svg></a>
+                <a href="{% url 'pages:faq' %}"><span class="pf-ico pf-ico--sm pf-ico--amber"><svg class="pf-i"><use href="#pf-help"/></svg></span>سوالات متداول<svg class="pf-i pf-i--sm pf-go"><use href="#pf-arrow"/></svg></a>
+                <a href="{% url 'pages:contact' %}"><span class="pf-ico pf-ico--sm pf-ico--teal"><svg class="pf-i"><use href="#pf-chat"/></svg></span>تماس با پشتیبانی<svg class="pf-i pf-i--sm pf-go"><use href="#pf-arrow"/></svg></a>
+            </section>
+        </aside>
+    </div>
 </div>
+
+<!-- Delete confirmation (replaces the browser's confirm box) -->
+<dialog class="pf-dialog" id="pf-confirm" aria-labelledby="pf-confirm-text">
+    <form method="dialog">
+        <span class="pf-ico pf-ico--rose"><svg class="pf-i"><use href="#pf-trash"/></svg></span>
+        <p id="pf-confirm-text"></p>
+        <div class="pf-dialog__actions">
+            <button type="submit" value="cancel" class="pf-btn pf-btn--outline">انصراف</button>
+            <button type="submit" value="ok" class="pf-btn pf-btn--danger">بله، حذف شود</button>
+        </div>
+    </form>
+</dialog>
+<script src="{% static 'js/profile.js' %}" defer></script>
 {% endblock %}

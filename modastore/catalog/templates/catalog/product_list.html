@@ -3,34 +3,105 @@
 {% load price_tags %}
 
 
-{% block title %}{% if current_category %}{{ current_category.name }}{% else %}محصولات{% endif %} | ModaStore{% endblock %}
+{% block title %}{% if current_category %}{{ current_category.name }}{% elif q %}نتیجه جست‌وجو: {{ q }}{% else %}همه محصولات{% endif %} | ModaStore{% endblock %}
 
 {% block extra_css %}
+{# Restore the grid/list choice before first paint so the layout never jumps #}
+<script>try{var v=localStorage.getItem('pl-view');if(v==='list'||v==='grid')document.documentElement.dataset.plView=v;}catch(e){}</script>
 <link rel="stylesheet" href="{% static 'css/product_list.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="container list-page">
-    <div class="list-head">
-        <h1>{% if current_category %}{{ current_category.name }}{% else %}همه محصولات{% endif %}</h1>
-        <button type="button" class="btn btn--outline filter-open">فیلترها</button>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+        <symbol id="pl-filter" viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/></symbol>
+        <symbol id="pl-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+        <symbol id="pl-list" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/></symbol>
+        <symbol id="pl-tick" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+        <symbol id="pl-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+        <symbol id="pl-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+        <symbol id="pl-star" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></symbol>
+        <symbol id="pl-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></symbol>
+        <symbol id="pl-next" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></symbol>
+        <symbol id="pl-prev" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></symbol>
+        <symbol id="pl-tag" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></symbol>
+    </defs>
+</svg>
+<div class="pl-progress" aria-hidden="true"></div>
+
+<!-- Header band -->
+<section class="pl-hero">
+    <div class="container">
+        <nav class="pl-crumb" aria-label="مسیر صفحه">
+            <a href="{% url 'catalog:home' %}">خانه</a><span aria-hidden="true">/</span>
+            {% if current_category %}<a href="{% url 'catalog:product_list' %}">محصولات</a><span aria-hidden="true">/</span><span>{{ current_category.name }}</span>
+            {% else %}<span>محصولات</span>{% endif %}
+        </nav>
+        <div class="pl-hero__row">
+            <div>
+                <h1>{% if current_category %}{{ current_category.name }}{% elif q %}نتیجه‌ی «{{ q }}»{% else %}همه محصولات{% endif %}</h1>
+                <p class="pl-hero__count">{{ paginator.count|fa_digits }} کالا{% if filters_count %} با {{ filters_count|fa_digits }} فیلتر فعال{% endif %}</p>
+            </div>
+        </div>
+        {% if categories %}
+        <div class="pl-cats" role="navigation" aria-label="دسته‌بندی‌ها">
+            <a href="{% url 'catalog:product_list' %}" class="{% if not current_category %}is-active{% endif %}">همه</a>
+            {% for cat in categories %}
+            <a href="{% url 'catalog:category' cat.slug %}" class="{% if current_category == cat %}is-active{% endif %}">{{ cat.name }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
+</section>
+
+<div class="container list-page">
+    <!-- Toolbar -->
+    <div class="pl-toolbar">
+        <button type="button" class="pl-filter-btn filter-open" aria-controls="filters" aria-expanded="false">
+            <svg class="pl-i"><use href="#pl-filter"/></svg>فیلترها
+            {% if filters_count %}<b class="pl-badge-count">{{ filters_count|fa_digits }}</b>{% endif %}
+        </button>
+        <div class="sort-links" role="group" aria-label="مرتب‌سازی">
+            <span class="sort-links__label">مرتب‌سازی:</span>
+            {% for key, label in sort_options %}
+            <a href="?{% if sort_query_string %}{{ sort_query_string }}&{% endif %}sort={{ key }}"
+               class="{% if current_sort == key %}is-active{% endif %}"{% if current_sort == key %} aria-current="true"{% endif %}>{{ label }}</a>
+            {% endfor %}
+        </div>
+        <div class="pl-view" role="group" aria-label="نحوه نمایش">
+            <button type="button" data-view="grid" aria-label="نمایش شبکه‌ای"><svg class="pl-i"><use href="#pl-grid"/></svg></button>
+            <button type="button" data-view="list" aria-label="نمایش لیستی"><svg class="pl-i"><use href="#pl-list"/></svg></button>
+        </div>
+    </div>
+
+    {% if active_filters %}
+    <div class="active-filters" aria-label="فیلترهای فعال">
+        {% for chip in active_filters %}
+        <a class="filter-chip" href="{{ chip.remove_url }}" aria-label="حذف فیلتر {{ chip.label }}">
+            {% if chip.is_price %}قیمت:{% if chip.price_min is not None %} از {{ chip.price_min|price_format }}{% endif %}{% if chip.price_max is not None %} تا {{ chip.price_max|price_format }}{% endif %} تومان{% else %}{{ chip.label }}{% endif %}
+            <svg class="pl-i pl-i--sm"><use href="#pl-x"/></svg>
+        </a>
+        {% endfor %}
+        <a class="filter-chip filter-chip--clear" href="{{ reset_url }}">حذف همه</a>
+    </div>
+    {% endif %}
 
     <div class="list-layout">
         <div class="filter-overlay" hidden></div>
-        <aside class="filters" id="filters">
+        <aside class="filters" id="filters" aria-label="فیلترها">
+            <div class="filters__grab" aria-hidden="true"></div>
             <div class="filters__head">
                 <strong>فیلترها</strong>
-                <button type="button" class="icon-btn filter-close" aria-label="بستن">✕</button>
+                <button type="button" class="icon-btn filter-close" aria-label="بستن"><svg class="pl-i"><use href="#pl-x"/></svg></button>
             </div>
 
-            <form method="get" id="filter-form">
+            <form method="get" id="filter-form" data-filter-form>
                 {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
                 <input type="hidden" name="sort" value="{{ current_sort }}">
 
                 <details class="filter-group" open>
-                    <summary>دسته‌بندی</summary>
-                    <ul>
+                    <summary>دسته‌بندی<svg class="pl-i pl-i--sm"><use href="#pl-chev"/></svg></summary>
+                    <ul class="filter-links">
                         <li><a href="{% url 'catalog:product_list' %}" {% if not current_category %}class="is-active"{% endif %}>همه</a></li>
                         {% for cat in categories %}
                         <li><a href="{% url 'catalog:category' cat.slug %}" {% if current_category == cat %}class="is-active"{% endif %}>{{ cat.name }}</a></li>
@@ -39,14 +110,19 @@
                 </details>
 
                 <details class="filter-group" open>
-                    <summary>برند</summary>
-                    <ul>
+                    <summary>برند<svg class="pl-i pl-i--sm"><use href="#pl-chev"/></svg></summary>
+                    {% if brands|length > 7 %}
+                    <label class="pl-mini-search"><svg class="pl-i pl-i--sm"><use href="#pl-search"/></svg>
+                        <input type="search" placeholder="جست‌وجوی برند" data-brand-search aria-label="جست‌وجوی برند" autocomplete="off">
+                    </label>
+                    {% endif %}
+                    <ul class="filter-checks filter-checks--scroll" data-brand-list>
                         {% for brand in brands %}
-                        <li>
-                            <label>
-                                <input type="checkbox" name="brand" value="{{ brand.slug }}"
-                                       {% if brand.slug in selected_brands %}checked{% endif %}>
-                                {{ brand.name }}
+                        <li data-name="{{ brand.name|lower }}">
+                            <label class="pl-check">
+                                <input type="checkbox" name="brand" value="{{ brand.slug }}" {% if brand.slug in selected_brands %}checked{% endif %}>
+                                <span class="pl-check__box"><svg class="pl-i"><use href="#pl-tick"/></svg></span>
+                                <span>{{ brand.name }}</span>
                             </label>
                         </li>
                         {% endfor %}
@@ -54,51 +130,53 @@
                 </details>
 
                 <details class="filter-group" open>
-                    <summary>بازه قیمت (تومان)</summary>
+                    <summary>بازه قیمت (تومان)<svg class="pl-i pl-i--sm"><use href="#pl-chev"/></svg></summary>
                     {% if bound_max > bound_min %}
-                    <div class="price-range" data-price-range
-                        data-min="{{ bound_min }}" data-max="{{ bound_max }}">
+                    <div class="price-range" data-price-range data-min="{{ bound_min }}" data-max="{{ bound_max }}">
                         <div class="range-values">
-                            <label>
-                                <span>از</span>
+                            <label><span>از</span>
                                 <input type="text" inputmode="numeric" name="price_min" dir="ltr" autocomplete="off"
-                                    value="{{ price_min|default_if_none:'' }}" data-price-input="min" aria-label="حداقل قیمت">
-                            </label>
-                            <label>
-                                <span>تا</span>
+                                       value="{{ price_min|default_if_none:'' }}" data-price-input="min" aria-label="حداقل قیمت"></label>
+                            <label><span>تا</span>
                                 <input type="text" inputmode="numeric" name="price_max" dir="ltr" autocomplete="off"
-                                    value="{{ price_max|default_if_none:'' }}" data-price-input="max" aria-label="حداکثر قیمت">
-                            </label>
+                                       value="{{ price_max|default_if_none:'' }}" data-price-input="max" aria-label="حداکثر قیمت"></label>
                         </div>
-
                         <div class="range-slider">
                             <div class="range-slider__track"><div class="range-slider__fill"></div></div>
                             <input type="range" min="{{ bound_min }}" max="{{ bound_max }}" step="{{ price_step }}"
-                                value="{{ price_min|default:bound_min }}" data-range="min" aria-label="حداقل قیمت">
+                                   value="{{ price_min|default:bound_min }}" data-range="min" aria-label="حداقل قیمت">
                             <input type="range" min="{{ bound_min }}" max="{{ bound_max }}" step="{{ price_step }}"
-                                value="{{ price_max|default:bound_max }}" data-range="max" aria-label="حداکثر قیمت">
+                                   value="{{ price_max|default:bound_max }}" data-range="max" aria-label="حداکثر قیمت">
                         </div>
-
-                        <div class="range-bounds">
-                            <span>{{ bound_min|price_format }}</span>
-                            <span>{{ bound_max|price_format }}</span>
-                        </div>
+                        <div class="range-bounds"><span>{{ bound_min|price_format }}</span><span>{{ bound_max|price_format }}</span></div>
                     </div>
                     {% else %}
                     <p class="muted">بازه قیمتی قابل تنظیم نیست.</p>
                     {% endif %}
                 </details>
 
+                <details class="filter-group" open>
+                    <summary>امتیاز مشتریان<svg class="pl-i pl-i--sm"><use href="#pl-chev"/></svg></summary>
+                    <div class="pl-rating">
+                        {% for val, label in rating_options %}
+                        <label class="pl-pill">
+                            <input type="radio" name="min_rating" value="{{ val }}" {% if min_rating == val %}checked{% endif %}>
+                            <span>{% if val %}<svg class="pl-i pl-i--sm pl-i--fill"><use href="#pl-star"/></svg>{% endif %}{{ label }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </details>
+
                 {% for attr in filter_attributes %}
                 <details class="filter-group">
-                    <summary>{{ attr.name }}</summary>
-                    <ul>
+                    <summary>{{ attr.name }}<svg class="pl-i pl-i--sm"><use href="#pl-chev"/></svg></summary>
+                    <ul class="filter-checks">
                         {% for val in attr.values.all %}
                         <li>
-                            <label>
-                                <input type="checkbox" name="attr_{{ attr.id }}" value="{{ val.id }}"
-                                       {% if val.id in selected_attr_ids %}checked{% endif %}>
-                                {{ val.value }}
+                            <label class="pl-check">
+                                <input type="checkbox" name="attr_{{ attr.id }}" value="{{ val.id }}" {% if val.id in selected_attr_ids %}checked{% endif %}>
+                                <span class="pl-check__box"><svg class="pl-i"><use href="#pl-tick"/></svg></span>
+                                <span>{{ val.value }}</span>
                             </label>
                         </li>
                         {% endfor %}
@@ -106,64 +184,65 @@
                 </details>
                 {% endfor %}
 
-                <label class="stock-toggle">
-                    <input type="checkbox" name="in_stock" value="1" {% if in_stock %}checked{% endif %}>
-                    فقط کالاهای موجود
-                </label>
+                <div class="filter-switches">
+                    <label class="pl-switch">
+                        <span>فقط کالاهای موجود</span>
+                        <input type="checkbox" name="in_stock" value="1" {% if in_stock %}checked{% endif %}><i aria-hidden="true"></i>
+                    </label>
+                    <label class="pl-switch">
+                        <span>فقط تخفیف‌دارها</span>
+                        <input type="checkbox" name="on_sale" value="1" {% if on_sale %}checked{% endif %}><i aria-hidden="true"></i>
+                    </label>
+                </div>
 
                 <div class="filters__actions">
                     <button type="submit" class="btn">اعمال فیلتر</button>
-                    <a href="{% if current_category %}{% url 'catalog:category' current_category.slug %}{% else %}{% url 'catalog:product_list' %}{% endif %}" class="btn btn--outline">حذف فیلترها</a>
+                    <a href="{{ reset_url }}" class="btn btn--outline">حذف فیلترها</a>
                 </div>
             </form>
         </aside>
 
-        <section class="list-main">
-
-            {% if price_active %}
-            <div class="active-filters">
-                <a class="filter-chip" href="?{{ price_clear_query }}" aria-label="حذف فیلتر قیمت">
-                    {% icon 'close' 'icon--sm' %}
-                    قیمت:
-                    {% if price_min is not None %}از {{ price_min|price_format }}{% endif %}
-                    {% if price_max is not None %}تا {{ price_max|price_format }}{% endif %}
-                    تومان
-                </a>
-            </div>
-            {% endif %}
-
-            <div class="sort-bar">
-                <span class="muted">{{ paginator.count }} کالا</span>
-                <div class="sort-links">
-                    {% for key, label in sort_options %}
-                       <a href="?{% if sort_query_string %}{{ sort_query_string }}&{% endif %}sort={{ key }}"
-                        class="{% if current_sort == key %}is-active{% endif %}">{{ label }}</a>
-                    {% endfor %}
-                </div>
-            </div>
-
+        <section class="list-main" aria-live="polite">
             {% if products %}
+            <p class="pl-summary">نمایش {{ page_obj.start_index|fa_digits }} تا {{ page_obj.end_index|fa_digits }} از {{ paginator.count|fa_digits }} کالا</p>
             <div class="product-grid">
-                {% for product in products %}
-                    {% include 'partials/product_card.html' %}
-                {% endfor %}
+                {% for product in products %}{% include 'partials/product_card.html' %}{% endfor %}
             </div>
 
             {% if is_paginated %}
-            <nav class="pagination" aria-label="صفحه‌بندی">
+            <nav class="pl-pager" aria-label="صفحه‌بندی">
                 {% if page_obj.has_previous %}
-                <a href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_obj.previous_page_number }}">قبلی</a>
+                <a class="pl-pager__nav" rel="prev" href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_obj.previous_page_number }}" aria-label="صفحه قبل"><svg class="pl-i"><use href="#pl-prev"/></svg><span>قبلی</span></a>
                 {% endif %}
-                <span>صفحه {{ page_obj.number }} از {{ paginator.num_pages }}</span>
+                <ul>
+                    {% for p in page_numbers %}
+                    {% if p.gap %}<li class="pl-pager__gap" aria-hidden="true">…</li>
+                    {% elif p.n == page_obj.number %}<li><span class="is-current" aria-current="page">{{ p.n|fa_digits }}</span></li>
+                    {% else %}<li><a href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ p.n }}">{{ p.n|fa_digits }}</a></li>{% endif %}
+                    {% endfor %}
+                </ul>
                 {% if page_obj.has_next %}
-                <a href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_obj.next_page_number }}">بعدی</a>
+                <a class="pl-pager__nav" rel="next" href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_obj.next_page_number }}" aria-label="صفحه بعد"><span>بعدی</span><svg class="pl-i"><use href="#pl-next"/></svg></a>
                 {% endif %}
             </nav>
             {% endif %}
 
             {% else %}
             <div class="empty-state">
-                <p>محصولی با این فیلترها پیدا نشد.</p>
+                <svg class="empty-state__art" viewBox="0 0 200 160" aria-hidden="true">
+                    <circle cx="100" cy="82" r="64" fill="#eeedfe"/>
+                    <circle cx="92" cy="74" r="30" fill="#fff" stroke="#5b4ef0" stroke-width="7"/>
+                    <line x1="114" y1="96" x2="142" y2="124" stroke="#5b4ef0" stroke-width="9" stroke-linecap="round"/>
+                    <path d="M80 82q12-12 24 0" fill="none" stroke="#a5b4fc" stroke-width="5" stroke-linecap="round"/>
+                    <circle cx="82" cy="68" r="3.5" fill="#5b4ef0"/><circle cx="102" cy="68" r="3.5" fill="#5b4ef0"/>
+                    <circle cx="36" cy="40" r="6" fill="#c7d2fe"/><circle cx="168" cy="52" r="5" fill="#a5b4fc"/><rect x="156" y="112" width="14" height="14" rx="4" fill="#ddd6fe" transform="rotate(16 163 119)"/>
+                </svg>
+                <h2>محصولی پیدا نشد</h2>
+                <p>{% if active_filters %}با این فیلترها کالایی وجود ندارد. یکی از فیلترها را بردار یا همه را پاک کن.{% else %}هنوز کالایی در این بخش ثبت نشده است.{% endif %}</p>
+                <div class="empty-state__actions">
+                    {% if active_filters %}<a href="{{ reset_url }}" class="btn">حذف همه فیلترها</a>{% endif %}
+                    <a href="{% url 'catalog:product_list' %}" class="btn btn--outline">همه محصولات</a>
+                </div>
             </div>
             {% endif %}
         </section>

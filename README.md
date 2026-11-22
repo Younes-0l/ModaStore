@@ -8,7 +8,7 @@ The UI is Persian (RTL), mobile-first, with desktop-only motion.
 <!-- Replace with real screenshots (see docs/screenshots/) -->
 | Home | Product list | Profile |
 |---|---|---|
-| ![Home](docs/screenshots/home.png) | ![Product list](docs/screenshots/product-list.png) | ![Profile](docs/screenshots/profile.png) |
+| ![Home](modastore/docs/screenshots/home.png) | ![Product list](modastore/docs/screenshots/product-list.png) | ![Profile](modastore/docs/screenshots/profile.png) |
 
 ## Features
 
